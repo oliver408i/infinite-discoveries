@@ -2,6 +2,12 @@
 Infinite Discoveries is a randomized star system generator for KSP, so you never run of stars and planets to explore.  
 This is a fork of the [original script](https://github.com/Sushutt/Infinite-Discoveries) that improves on a number of things (see below).
 
+**Sample Planets**
+![image](https://github.com/user-attachments/assets/e36f1e61-c25a-461a-adfb-31f2aa451931)
+![image](https://github.com/user-attachments/assets/d8fe08a3-3cb1-4600-a1b9-eff52378356d)
+![image](https://github.com/user-attachments/assets/f56d6b42-bf0e-4afc-8781-46870b1cdf46)
+
+
 ## Features
 - **Procedural Star System Generation**  
   Automatically generates unique star systems with stars, planets, and moons for Kerbal Space Program.
