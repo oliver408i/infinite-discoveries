@@ -4,7 +4,7 @@
         <meta charset="UTF-8" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Document</title>
+        <title>Infinite Viewer</title>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css">
         <script type="importmap">
         {
@@ -14,14 +14,60 @@
         }
         }
         </script>
+        <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
         <style>
             body, html {
                 margin: 0;
             }
+            canvas {
+                position: absolute;
+                left: 0;
+            }
         </style>
     </head>
     <body>
-        <button style="z-index: 99;"id="load-button">Load Configs Folder</button>
+        <div id="inputs">
+            <center>
+                <h1>Infinite Viewer</h1>
+                <p>A simple three.js based star system viewer for KSP (Kopernicus)</p>
+                <p><b>Warning!</b><br> This is a work in progress, it is not 100% accurate to what you will see in KSP!<br>Use this only as a quick visual check only, or to preview a pack before you load it up. Nothing will beat actual KSP!<br><i>Might not work with all planet packs!</i></p>
+                <div>
+                    <table>
+                        <tr>
+                            <td>
+                                <p><b>Features implemented</b></p>
+                                <ul>
+                                    <li>Planetary bodies</li>
+                                    <li>Texture, terrain, and heightmap for planets</li>
+                                    <li>Normal maps (WIP, still very buggy)</li>
+                                    <li>Orbits (and their lines)</li>
+                                    <li>Orbit attributes</li>
+                                    <li>Stars and approx light</li>
+                                    <li>Star light colors (on planets only)</li>
+                                </ul>
+                            </td>
+                            <td>
+                                <p><b>Features not implemented</b></p>
+                                <ul>
+                                    <li>Atmospheres</li>
+                                    <li>Planetary rings (To be added)</li>
+                                </ul>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <p><b>How to use</b><br>
+                    Use mouse to pan around. Click a planet's name to focus on it.<br>Press TAB to go to next planet (shift+TAB not implemented yet).<br>
+                    The camera placement is a bit weird, for stars and big planets, you may need to zoom out to see it.<br>
+                    If you don't see anything on load, press Tab to focus on the next body
+                </p>
+                <p>Select a zip file to load. The .cfg and textures can be anywhere in the zip file<br>.dds files CANNOT have duplicate names! All filenames must be unique for dds files!</p>
+                <input type="file" id="zip-upload" accept=".zip" />
+                <button id="load-button">Go!</button>
+
+                <p>Contact: nitrogendioxide (Discord)</p>
+            </center>
+        </div>
         <script type="module" src="client.mjs"></script>
     </body>
 </html>

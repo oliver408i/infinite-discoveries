@@ -100,12 +100,13 @@ function createOrbitLine(semiMajorAxis, eccentricity = 0, inclination = 0) {
 }
 
 // Move main loading logic into a new async function
-async function initializeScene() {
-    const { planetConfigs, iconPaths, ddsPaths } = await loadCfgFilesRecursively();
+async function initializeScene(data) {
+    const { planetConfigs, iconPaths, ddsPaths } = data;
+    
+    document.getElementById('loading').innerText = "Loading celestial bodies...";
+    
     console.log('Loaded CFG files:', planetConfigs);
     console.log(`Total configs loaded: ${planetConfigs.length}`);
-    const loadBtn = document.getElementById('load-button');
-    if (loadBtn) loadBtn.remove();
 
     const system = buildBodyTree(planetConfigs);
     console.log('System tree rooted at Sun:', system);
@@ -439,9 +440,6 @@ async function initializeScene() {
     await addBodiesToScene(system, new THREE.Vector3(0, 0, 0), new Set(), textureBasePathMap);
     console.log(`Displayed total bodies: ${displayedBodyCount}`);
 
-    //const light = new THREE.HemisphereLight()
-    //scene.add(light)
-
     window.addEventListener('keydown', (e) => {
         if (e.key === 'Tab') {
             e.preventDefault();
@@ -456,6 +454,8 @@ async function initializeScene() {
         }
     });
 
+    document.getElementById('loading').remove();
+    document.body.style.overflow = 'hidden';
     document.body.appendChild( renderer.domElement );
     document.body.appendChild(labelRenderer.domElement);
 
@@ -469,76 +469,82 @@ function animate() {
     labelRenderer.render(scene, camera);
 }
 
-// Recursively load all .cfg files and image files from a user-selected directory,
-// or from a hardcoded directory for development.
-async function loadCfgFilesRecursively() {
-    // DEV MODE: Toggle and path for hardcoded directory loading
-    const USE_HARDCODED_PATH = false; // This currently doesn't work for now
-    const HARDCODED_PATH = null;
+
+// Load .cfg, .dds, and image files from a zip file
+async function loadCfgFromZip(file) {
+
+    document.getElementById('inputs').remove()
+    const loadingText = document.createElement('div');
+    loadingText.id = 'loading';
+    loadingText.innerText = 'Unzipping...';
+    loadingText.style.position = 'absolute';
+    loadingText.style.top = '50%';
+    loadingText.style.left = '50%';
+    loadingText.style.transform = 'translate(-50%, -50%)';
+    document.body.appendChild(loadingText);
+
+    const zip = await JSZip.loadAsync(file);
+    console.log('Loaded zip file:', zip);
 
     const planetConfigs = [];
     const iconPaths = {};
     const ddsPaths = {};
 
-    async function readDirectory(dirHandle) {
-        for await (const entry of dirHandle.values()) {
-            if (entry.kind === 'file') {
-                if (entry.name.endsWith('.cfg')) {
-                    const file = await entry.getFile();
-                    const text = await file.text();
-                    if (text.trimStart().startsWith('@Kopernicus:AFTER[Kopernicus]\n{\n    Body')) {
-                        planetConfigs.push({ name: entry.name, content: text });
-                    }
-                }
-                if (/\.(png|jpg|jpeg|gif|webp)$/i.test(entry.name)) {
-                    const file = await entry.getFile();
-                    iconPaths[entry.name] = URL.createObjectURL(file);
-                }
-                if (entry.name.toLowerCase().endsWith('.dds')) {
-                    const file = await entry.getFile();
-                    ddsPaths[entry.name] = URL.createObjectURL(file);
-                }
-            } else if (entry.kind === 'directory') {
-                await readDirectory(entry);
-            }
+    const totalFiles = Object.keys(zip.files).length;
+
+    let filesToLookThrough = totalFiles;
+    for (const [path, zipEntry] of Object.entries(zip.files)) {
+        if (zipEntry.dir) {
+            filesToLookThrough--;
+            continue;
         }
+
+        const fileData = await zipEntry.async('blob');
+        const fileText = path.endsWith('.cfg') ? await zipEntry.async('text') : null;
+
+        if (path.endsWith('.cfg') && fileText.trimStart().startsWith('@Kopernicus:AFTER[Kopernicus]')) {
+            planetConfigs.push({ name: path, content: fileText });
+        } else if (/\.(png|jpg|jpeg|gif|webp)$/i.test(path)) {
+            iconPaths[path.split('/').pop()] = URL.createObjectURL(fileData);
+        } else if (path.toLowerCase().endsWith('.dds')) {
+            ddsPaths[path.split('/').pop()] = URL.createObjectURL(fileData);
+        }
+
+        filesToLookThrough--;
+        loadingText.innerText = `Finding planet configs & textures... (${filesToLookThrough} files left)`;
     }
 
-    try {
-        if (USE_HARDCODED_PATH) {
-            // Attempt to get the hardcoded directory (only works if supported by environment)
-            let dirHandle = null;
-            if (navigator.storage && typeof navigator.storage.getDirectory === 'function') {
-                try {
-                    dirHandle = await navigator.storage.getDirectory(HARDCODED_PATH);
-                } catch (e) {
-                    dirHandle = null;
-                }
-            }
-            if (!dirHandle) {
-                console.warn('Hardcoded directory not available, falling back to picker.');
-                const pickerHandle = await window.showDirectoryPicker();
-                await readDirectory(pickerHandle);
-            } else {
-                await readDirectory(dirHandle);
-            }
-        } else {
-            const dirHandle = await window.showDirectoryPicker();
-            await readDirectory(dirHandle);
-        }
-        console.log('Loaded CFG files:', planetConfigs);
-        return { planetConfigs, iconPaths, ddsPaths };
-    } catch (err) {
-        console.error('Error reading directory:', err);
-        return { planetConfigs: [], iconPaths: {}, ddsPaths: {} };
+    return { planetConfigs, iconPaths, ddsPaths };
+}
+
+document.getElementById('load-button').addEventListener('click', async () => {
+    const fileInput = document.getElementById('zip-upload');
+    const file = fileInput.files[0];
+    if (!file) {
+        alert('No file selected. Please select a zip file.');
+        return;
     }
-}
 
-// Automatically invoke the loading logic if USE_HARDCODED_PATH is enabled.
-const USE_HARDCODED_PATH = false; // Match with the earlier flag
+    const { planetConfigs, iconPaths, ddsPaths } = await loadCfgFromZip(file);
+    await initializeScene({ planetConfigs, iconPaths, ddsPaths });
+});
 
-if (USE_HARDCODED_PATH) {
-    initializeScene();
-} else {
-    document.getElementById('load-button').addEventListener('click', initializeScene);
-}
+
+document.getElementById('zip-upload')?.addEventListener('change', async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    const { planetConfigs, iconPaths, ddsPaths } = await loadCfgFromZip(file);
+    await initializeScene({ planetConfigs, iconPaths, ddsPaths });
+});
+
+window.addEventListener('resize', () => {
+    const canvas = renderer.domElement;
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    canvas.width = width;
+    canvas.height = height;
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+    renderer.setSize(width, height);
+    labelRenderer.setSize(width, height);
+});
