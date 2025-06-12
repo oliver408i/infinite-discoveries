@@ -262,17 +262,6 @@ class DeleteWindow(ctk.CTk):
                 self.deleteAllButton.configure(text="Directory doesn't exist!")
                 self.after(2000, self.reset_all_button)
 
-class HelpWindow(ctk.CTk):
-    def __init__(self):
-        super().__init__()
-        self.title("Infinite Discoveries Help")
-        self.geometry("400x200")
-        self.resizable(False, False)
-        self.label = ctk.CTkLabel(self, text="Help content goes here.", wraplength=380, justify="left", text_color="#ffffff")
-        self.label.pack(expand=True, padx=20, pady=20)
-        self.protocol("WM_DELETE_WINDOW", self.destroy)
-
-
 class MainUI(ctk.CTk):
     def __init__(self, targetPath, base_dir, Settings, state, startLoop, allActions, allThreads, mainThreadFinished, amountOfThingsDone, amountOfThingsToDo):
         super().__init__()
@@ -406,16 +395,13 @@ class MainUI(ctk.CTk):
         self.seed_label.pack(side="left", padx=5)
         self.seed_entry.bind("<KeyRelease>", self.handle_seed_input)
 
-        # Settings, Delete, Help buttons
+        # Settings, Delete buttons
         self.buttons_frame = ctk.CTkFrame(self.input_frame)
         self.buttons_frame.pack(fill="x", padx=10, pady=(0, 20))
         self.settings_button = ctk.CTkButton(self.buttons_frame, text="Settings", command=openSettings, text_color="#ffffff")
         self.settings_button.pack(side="left", padx=10)
         self.delete_button = ctk.CTkButton(self.buttons_frame, text="Delete", command=lambda: DeleteWindow(self.targetPath).mainloop(), text_color="#ffffff")
         self.delete_button.pack(side="left", padx=10)
-        self.help_button = ctk.CTkButton(self.buttons_frame, text="Help", command=lambda: HelpWindow().mainloop(), text_color="#ffffff")
-        self.help_button.pack(side="left", padx=10)
-
         # Output frame
         self.currentFocusText = ctk.CTkLabel(self.output_frame, text="Generator is not currently running.", text_color="#ffffff")
         self.currentFocusText.pack(fill="x", pady=(10, 2))

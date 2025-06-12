@@ -55,6 +55,7 @@ This is a fork of the [original script](https://github.com/Sushutt/Infinite-Disc
 ### After generation
 - Check the `Configs` folder for any bad planet files (usually those with zero bytes or empty)
 - If you find any, you can either delete them, or delete the whole `InfiniteDiscoveries` folder and regenerate
+- (Optional) If you don't use Parallax or the other visual mods, you can remove their settings and assets from the `Visuals` folder to save space.
 - Now you can boot up KSP and play
 
 <details><summary>MagickWand Install</summary>
@@ -66,10 +67,10 @@ This is a fork of the [original script](https://github.com/Sushutt/Infinite-Disc
 ## Improvements over the original
 - Code up the damn code (it's a big mess, I'm still working on it)
 - Full support for Mac and Linux (and Windows, of course)
-- Custom tkinter instead of the now paid pysimplegui
+- Custom tkinter instead of the now paid pysimplegui (complete UI rewrite)
 - Fix several bugs in the original scripts (including solar panels not working)
 - Removed random unused assets (like a video of a thumbs up emoji, for whatever reason)
-- Better name generation (and to prevent duplicate names)
+- Better name generation (to prevent duplicate names)
 
 ## Issues/problems to be worked on
 - Duplicate names (not enought names, need better name gen)

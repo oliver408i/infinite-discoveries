@@ -35,7 +35,6 @@ if currentProcess.name == "MainThread":
     )
     
     print("---------------------------------------------------------------------------------------------------------")
-    queue = []
 import random
 import string
 from colour import Color
@@ -1423,7 +1422,7 @@ def generateStar(starSeed, AmountOfPlanetsToGenerate, systemName, targetFilepath
                 print("wowowowowowowowoooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooohohohohohohohohololololooleeeeheeeeee")
                 planetsGenerated = planetsGenerated + 1
                 if Settings.useMultithreading == True:
-                    generatePlanetProcess = threading.Thread(target=generate, args=(starSeed,starName,starRadius,starMass,starColor,atmoCfg,listCfg,colorsRound,oceanCfg,eveCfg,VolumetricEveCfg,Lum,parallaxCfg,parallax_subd_Cfg,parallax_scatterfix_Cfg,parallax_scatter_Cfg,evePQSCfg,rationalResources_Cfg,starTypeStr,x+1,None,None,None,None,distBinaryParents,baryOrder))
+                    generatePlanetProcess = threading.Thread(target=generate, args=(starSeed,starName,starRadius,starMass,starColor,atmoCfg,listCfg,colorsRound,oceanCfg,eveCfg,VolumetricEveCfg,Lum,parallaxCfg,parallax_subd_Cfg,parallax_scatterfix_Cfg,parallax_scatter_Cfg,evePQSCfg,rationalResources_Cfg,starTypeStr,x+1,None,None,None,None,distBinaryParents,baryOrder), daemon=True)
                     allThreads.append(generatePlanetProcess)
                     allActions.append([time.localtime(),"Starting thread: " + str(generatePlanetProcess)])
                     allActions.append([time.localtime(),"Thread for planet: " + str(x)])
@@ -1437,10 +1436,9 @@ def generateStar(starSeed, AmountOfPlanetsToGenerate, systemName, targetFilepath
             for x in range(int(planetsNum)):
                 if everythingEnded == True:
                     raise Exception("UI thread isn't running.")
-                print("wowowowowowowowoooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooohohohohohohohohololololooleeeeheeeeee")
                 planetsGenerated = planetsGenerated + 1
                 if Settings.useMultithreading == True:
-                    generatePlanetProcess = threading.Thread(target=generate, args=(starSeed,starName,starRadius,starMass,starColor,atmoCfg,listCfg,colorsRound,oceanCfg,eveCfg,VolumetricEveCfg,Lum,parallaxCfg,parallax_subd_Cfg,parallax_scatterfix_Cfg,parallax_scatter_Cfg,evePQSCfg,rationalResources_Cfg,starTypeStr,x+1))
+                    generatePlanetProcess = threading.Thread(target=generate, args=(starSeed,starName,starRadius,starMass,starColor,atmoCfg,listCfg,colorsRound,oceanCfg,eveCfg,VolumetricEveCfg,Lum,parallaxCfg,parallax_subd_Cfg,parallax_scatterfix_Cfg,parallax_scatter_Cfg,evePQSCfg,rationalResources_Cfg,starTypeStr,x+1), daemon=True)
                     allThreads.append(generatePlanetProcess)
                     allActions.append([time.localtime(),"Starting thread: " + str(generatePlanetProcess)])
                     allActions.append([time.localtime(),"Thread for planet: " + str(x)])
@@ -1938,7 +1936,7 @@ def generateBarycenter(starSeed, AmountOfPlanetsToGenerate, targetFilepath):
             #print("wowowowowowowowoooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooohohohohohohohohololololooleeeeheeeeee")
             planetsGenerated = planetsGenerated + 1
             if Settings.useMultithreading == True:
-                generatePlanetProcess = threading.Thread(target=generate, args=(starSeed,systemName,barycenterRadius,barycenterMass,star1Color,atmoCfg,listCfg,colorsRound,oceanCfg,eveCfg,VolumetricEveCfg,Lum,parallaxCfg,parallax_subd_Cfg,parallax_scatterfix_Cfg,parallax_scatter_Cfg,evePQSCfg,rationalResources_Cfg,starTypeStr1,x+1,binaryParents,binaryTypes,gSMA,distanceThingamabob))
+                generatePlanetProcess = threading.Thread(target=generate, args=(starSeed,systemName,barycenterRadius,barycenterMass,star1Color,atmoCfg,listCfg,colorsRound,oceanCfg,eveCfg,VolumetricEveCfg,Lum,parallaxCfg,parallax_subd_Cfg,parallax_scatterfix_Cfg,parallax_scatter_Cfg,evePQSCfg,rationalResources_Cfg,starTypeStr1,x+1,binaryParents,binaryTypes,gSMA,distanceThingamabob), daemon=True)
                 allThreads.append(generatePlanetProcess)
                 allActions.append([time.localtime(),"Starting thread: " + str(generatePlanetProcess)])
                 allActions.append([time.localtime(),"Total threads:" + str(threading.active_count())])
@@ -1988,35 +1986,6 @@ def testNum(Numer):
         print("That's not an number!")
         exit()
 
-#print("---------------------------------------------------------------")
-#print("Infinite-Discoveries Version 0.9.8 (public beta!)")
-#print("---------------------------------------------------------------")
-#print("WARNING: Generating a large amount of stars will take longer to... generate! The more stars you generate, the more it has to generate. You can find a settings file in the mod directory if you want to adjust some parameters.")
-#print("---------------------------------------------------------------")
-#
-#StarAmount = int(input("Amount of stars to generate: "))
-#testNum(StarAmount)
-#
-#print("---------------------------------------------------------------")
-#print("If you happened to input a very high number just now, it's recommended to lower the amount of planets per star to reduce KSP loading times.")
-#print("---------------------------------------------------------------")
-#AmountOfPlanetsToGenerate = int(input("Maximum number of planets to add around stars: "))
-#testNum(AmountOfPlanetsToGenerate)
-#print("---------------------------------------------------------------")
-#print("Last thing to input before you can generate! Please input the maximum number of moons to add around a planet.")
-#print("---------------------------------------------------------------")
-#AmountOfMoonsToGenerate = int(input("Maximum number of moons per planet: "))
-#testNum(AmountOfMoonsToGenerate)
-#print("---------------------------------------------------------------")
-#estTime = ((AmountOfPlanetsToGenerate * AmountOfMoonsToGenerate) * StarAmount)*15
-#print("The generator should take AT MOST " + str(round((estTime/60),2)) + " minutes.")
-#if Settings.deleteUnnecessarFolders == True:
-#    print("The program WILL delete itself once it's done!")
-#print("---------------------------------------------------------------")
-#input("Type anything or press enter to continue: ")
-#planetsGenerated = 0
-#startTime = time.time()
-
 StarAmount = 0
 AmountOfPlanetsToGenerate = 0
 AmountOfMoonsToGenerate = 0
@@ -2029,8 +1998,8 @@ startTime = time.time()
 
 loopProcess = None
 
-def systemLoop(queue, starAmnt, planetAmnt, moonAmnt, asteroidAmnt, targetFilepath, customSeed=None, overrideValues=None):
-    print(str(customSeed) + " <------------------------------------------ THE FUCKING SEED BITCH")
+def systemLoop(starAmnt, planetAmnt, moonAmnt, asteroidAmnt, targetFilepath, customSeed=None, overrideValues=None):
+    print("Custom seed: " + str(customSeed))
     print(multiprocessing.current_process())
     importlib.reload(Settings)
     os.makedirs(targetFilepath + "/InfiniteDiscoveries", exist_ok=True)
@@ -2072,8 +2041,6 @@ def systemLoop(queue, starAmnt, planetAmnt, moonAmnt, asteroidAmnt, targetFilepa
 
     state.allActionArrayUpdated = True
 
-    queue.append("heeeeeheeeeeeeeee")
-
     global StarAmount
     global AmountOfPlanetsToGenerate
     global AmountOfMoonsToGenerate
@@ -2114,7 +2081,6 @@ def systemLoop(queue, starAmnt, planetAmnt, moonAmnt, asteroidAmnt, targetFilepa
         else:
             if int(customSeed) >= 0:
                 generatorSeed = int(customSeed)
-                print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" + str(generatorSeed))
                 gloablSeed = generatorSeed
             else:
                 generatorSeed = int(0)
@@ -2133,7 +2099,7 @@ def systemLoop(queue, starAmnt, planetAmnt, moonAmnt, asteroidAmnt, targetFilepa
         if binaryChoice == 0:
             barycenter = True
             if Settings.useMultithreading == True:
-                generateBarycenterProcess = threading.Thread(target=generateBarycenter, args=(starSeed, AmountOfPlanetsToGenerate, targetPath))
+                generateBarycenterProcess = threading.Thread(target=generateBarycenter, args=(starSeed, AmountOfPlanetsToGenerate, targetPath), daemon=True)
                 allThreads.append(generateBarycenterProcess)
                 generateBarycenterProcess.start()
             else:
@@ -2141,7 +2107,7 @@ def systemLoop(queue, starAmnt, planetAmnt, moonAmnt, asteroidAmnt, targetFilepa
         else:
             barycenter = False
             if Settings.useMultithreading == True:
-                generateStarProcess = threading.Thread(target=generateStar, args=(starSeed, AmountOfPlanetsToGenerate, barycenter, targetPath))
+                generateStarProcess = threading.Thread(target=generateStar, args=(starSeed, AmountOfPlanetsToGenerate, barycenter, targetPath), daemon=True)
                 allThreads.append(generateStarProcess)
                 generateStarProcess.start()
             else:
@@ -2169,13 +2135,13 @@ def waitForThreadsToFinish(mainThread, idk):
 
 def startLoop(starAm,planetAm,moonAM,asteroidAM,targetPath,customSeed=None,overrides=None):
     global loopProcess
-    loopProcess = threading.Thread(target=systemLoop, args=(queue,starAm,planetAm,moonAM,asteroidAM,targetPath,customSeed,overrides))
+    loopProcess = threading.Thread(target=systemLoop, args=(starAm,planetAm,moonAM,asteroidAM,targetPath,customSeed,overrides), daemon=True)
     allThreads.append(loopProcess)
     allActions.append([time.localtime(),"Starting thread: " + str(loopProcess)])
     allActions.append([time.localtime(),"Total threads:" + str(threading.active_count())])
     state.allActionArrayUpdated = True
     loopProcess.start()
-    waitForThreadsToFinishThread = threading.Thread(target=waitForThreadsToFinish, args=(loopProcess,None))
+    waitForThreadsToFinishThread = threading.Thread(target=waitForThreadsToFinish, args=(loopProcess,None), daemon=True)
     waitForThreadsToFinishThread.start()
 
 from ui import MainUI
@@ -2195,7 +2161,6 @@ if currentProcess.name == "MainThread":
     )
     app.mainloop()
 
-#print("gagagaga")
 
 #systemLoop(StarAmount, AmountOfPlanetsToGenerate, AmountOfMoonsToGenerate)
 
@@ -2207,8 +2172,6 @@ print("Total number of moons generated: " + str(totalMoonsGenerated))
 print("---------------------------------------------------------------")
 print("Total objects generated: " + str(totalStarsGenerated + totalPlanetsGenerated + totalMoonsGenerated))
 print("---------------------------------------------------------------")
-#print("Now it's REALLY all done!")
-#print("---------------------------------------------------------------")
 endTime = time.time()
 elapsedTime = endTime - startTime
 if elapsedTime > 60:
