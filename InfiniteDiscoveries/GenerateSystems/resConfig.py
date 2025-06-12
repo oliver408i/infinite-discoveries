@@ -135,13 +135,6 @@ def createResourceConfig(seed,config,bodyName,lava,icy,temp,pressure,ocean,gasGi
             else:
                 resources.append("AtmGasV")
 
-    #config.write(
-    #    "+PLANETARY_RESOURCE:HAS[#Tag[SrfRock]]\n"
-    #    "{\n"
-    #    "    @PlanetName = Kerbin\n"
-    #    "    @Tag = Applied\n"
-    #    "}\n"
-    #)
     print(resources)
     for resource in resources:
         config.write(

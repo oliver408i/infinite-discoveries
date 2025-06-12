@@ -234,6 +234,8 @@ def generateWRBinarySpiral(bodyName, base_dir):
     )
 # Generate nebula for something
 def generateNebula(bodyName, base_dir):
+    if not (base_dir / "Visuals" / "NiftyNebulae").exists():
+        (base_dir / "Visuals" / "NiftyNebulae").mkdir()
     nebulaCfg = open(base_dir / "Visuals" / "NiftyNebulae" / f"{bodyName}_NEBULA.cfg", "x")
     nebulaCfg.write(
         "NiftyNebula\n"

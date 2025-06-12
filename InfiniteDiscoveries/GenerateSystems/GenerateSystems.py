@@ -1,12 +1,9 @@
 import os
-import shutil, state, textwrap
+import shutil, state
 
 import Settings
 from pathlib import Path
 base_dir = Path(__file__).resolve().parent.parent
-
-import PySimpleGUI as sg
-
 
 import multiprocessing
 import threading
@@ -15,7 +12,6 @@ allThreads = []
 allActions = []
 mainThreadFinished = False
 everythingEnded = False
-print(currentProcess.name)
 
 amountOfThingsToDo = 0
 amountOfThingsDone = 0
@@ -115,7 +111,7 @@ def getStarColorMult(radi):
 from resConfig import createResourceConfig
 
 
-from wormholeGen import generateWormhole # Unused?
+from wormholeGen import generateWormholes # Unused?
 
 from parallax import addParallaxScatter, addToParallaxScatterFixCfg, addToParallaxCfg, addSubdividerFix
 from generateDisk import generateDisks
@@ -531,7 +527,7 @@ def generate(seedThing,starN,starRadius,starMass,starColor,atmoCfg,listCfg,color
     else:
         planetMass = (4.23321273059351E+24 / (6000000/planetRadius)**3.7)
 
-    print(typeOfStar + "AAYGAUYGYUFEYHUEYUHEGAHYAEUYHFUIAEFUIHASUIFASUFHUIASHFIUASHFASHFASASFASF")
+    print(typeOfStar)
 
     if typeOfStar == "MainSeq":
         if not gSMA == None:
@@ -921,7 +917,7 @@ def generate(seedThing,starN,starRadius,starMass,starColor,atmoCfg,listCfg,color
                 else:
                     cloudTexNum = planetRNG.randint(1,5)
                 addToEVECfg(eveCfg, cloudTexNum, planetName, tidallyLocked, allActions)
-                addToVolumetricEveCfg(planetSeed, VolumetricEveCfg, cloudTexNum, planetName, tidallyLocked, ocean)
+                addToVolumetricEveCfg(planetSeed, VolumetricEveCfg, cloudTexNum, planetName, tidallyLocked, ocean, allActions)
             if atmoPress > 10:
                 auroraBright = planetRNG.randint(128,255)
                 aurR = planetRNG.randint(0,255)
@@ -936,8 +932,8 @@ def generate(seedThing,starN,starRadius,starMass,starColor,atmoCfg,listCfg,color
             aurB = 255
             auroraClr = (aurR,aurG,aurB)
             addPQSFix(evePQSCfg, planetName)
-            addToEVECfg(eveCfg, 1, planetName, tidallyLocked, planetName, allActions)
-            addToVolumetricEveCfg(planetSeed, VolumetricEveCfg, 1, planetName, tidallyLocked, ocean, planetName)
+            addToEVECfg(eveCfg, 1, planetName, tidallyLocked, allActions)
+            addToVolumetricEveCfg(planetSeed, VolumetricEveCfg, 1, planetName, tidallyLocked, ocean, allActions)
             addToEVEAurora(eveCfg, planetName, auroraBright, auroraClr)
             if finalTemp > 700:
                 generateSuperheatedClouds(eveCfg,planetName,finalTemp, colorsReversed, colorsys)
@@ -1028,8 +1024,7 @@ def generate(seedThing,starN,starRadius,starMass,starColor,atmoCfg,listCfg,color
 
 # Picks parameters for stars
 def generateStar(starSeed, AmountOfPlanetsToGenerate, systemName, targetFilepath, parentBarycenter=None, binarySMA=None, binaryP=None, binaryRad=None, maaoD=None, baryOrder=None, starType=None, binaryType=None, binaryEccentricity=None):
-    print(str(starType) + " sooooooooooooo like it's right and all but????")
-    #print(str(starType) + " BRUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUH")
+    #print(str(starType) + " sooooooooooooo like it's right and all but????")
     
     global targetPath
     targetPath = targetFilepath
@@ -1098,7 +1093,7 @@ def generateStar(starSeed, AmountOfPlanetsToGenerate, systemName, targetFilepath
                 if randomSizeType == 1:
                     starRadius = starGenRNG.randint(minStarSize,maxStarSize)
                 else:
-                    starRadius = starGenRNG.randint(minStarSize,maxStarSize/6)
+                    starRadius = starGenRNG.randint(minStarSize,int(maxStarSize/6))
                 #starRadius =  math.floor(abs(random.random() - random.random()) * (10 + maxStarSize - minStarSize) + minStarSize)
                 starMass = starRadius * 6.7146251e+19
             else:
@@ -1324,11 +1319,11 @@ def generateStar(starSeed, AmountOfPlanetsToGenerate, systemName, targetFilepath
     if parentBarycenter == None:
         starDist = starGenRNG.randint(Settings.minStarDistance,Settings.maxStarDistance)
         if parentGalaxy == "LKC_CtrlB":
-            starDistG = starGenRNG.randint(Settings.minStarDistance/5,Settings.maxStarDistance*10)/3.5
+            starDistG = round(starGenRNG.randint(Settings.minStarDistance // 5, Settings.maxStarDistance * 10) / 3.5)
         elif parentGalaxy == "SKC_CtrlB":
-            starDistG = starGenRNG.randint(Settings.minStarDistance/5,Settings.maxStarDistance*10)/11
+            starDistG = round(starGenRNG.randint(Settings.minStarDistance // 5, Settings.maxStarDistance * 10) / 11)
         else:
-            starDistG = starGenRNG.randint(Settings.minStarDistance/5,Settings.maxStarDistance*10)
+            starDistG = starGenRNG.randint(Settings.minStarDistance // 5, Settings.maxStarDistance * 10)
     else:
         starDist = binarySMA
         starDistG = binarySMA
@@ -1414,7 +1409,7 @@ def generateStar(starSeed, AmountOfPlanetsToGenerate, systemName, targetFilepath
         createResourceConfig(starSeed,rationalResources_Cfg,starName,False,False,0,0,False,False,None,starTypeStr)
 
         sunfCfg = open(targetPath + "/Visuals/Scatterer/" + starName + "_ScattererSunflare" + ".cfg","x")
-        addSunflareCfg(sunfCfg, starColor, starName, starTypeStr, colorsys)
+        addSunflareCfg(sunfCfg, starColor, starName, starTypeStr)
 
         allPlanetThreads = []
 
@@ -1581,11 +1576,11 @@ def generateBarycenter(starSeed, AmountOfPlanetsToGenerate, targetFilepath):
             randomSizeType = baryGenRNG.randint(1,3)
             if randomSizeType == 1:
                 if binaryType == "Distant":
-                    star1Radius = baryGenRNG.randint(minStarSize,maxStarSize/3)
+                    star1Radius = baryGenRNG.randint(minStarSize,maxStarSize//3)
                 else:
                     star1Radius = baryGenRNG.randint(minStarSize,maxStarSize)
             else:
-                star1Radius = baryGenRNG.randint(minStarSize,maxStarSize/6)
+                star1Radius = baryGenRNG.randint(minStarSize,maxStarSize//6)
             #star1Radius =  math.floor(abs(random.random() - random.random()) * (10 + maxStarSize - minStarSize) + minStarSize)
             distanceRadiusThing1 = star1Radius
             star1Mass = star1Radius * 6.7146251e+19
@@ -1648,11 +1643,11 @@ def generateBarycenter(starSeed, AmountOfPlanetsToGenerate, targetFilepath):
             randomSizeType = baryGenRNG.randint(1,3)
             if randomSizeType == 1:
                 if binaryType == "Distant":
-                    star2Radius = baryGenRNG.randint(minStarSize,maxStarSize/3)
+                    star2Radius = baryGenRNG.randint(minStarSize,maxStarSize//3)
                 else:
                     star2Radius = baryGenRNG.randint(minStarSize,maxStarSize)
             else:
-                star2Radius = baryGenRNG.randint(minStarSize,maxStarSize/6)
+                star2Radius = baryGenRNG.randint(minStarSize,maxStarSize//6)
             #star2Radius =  math.floor(abs(random.random() - random.random()) * (10 + maxStarSize - minStarSize) + minStarSize)
             distanceRadiusThing2 = star2Radius
             star2Mass = star2Radius * 6.7146251e+19
@@ -1718,11 +1713,11 @@ def generateBarycenter(starSeed, AmountOfPlanetsToGenerate, targetFilepath):
     distanceThingamabob = largerDistance
     barycenterDist = baryGenRNG.randint(Settings.minStarDistance,Settings.maxStarDistance)
     if parentGalaxy == "LKC_CtrlB":
-        barycenterDistG = baryGenRNG.randint(Settings.minStarDistance/5,Settings.maxStarDistance*10)/3.5
+        barycenterDistG = baryGenRNG.randint(Settings.minStarDistance//5,Settings.maxStarDistance*10)/3.5
     elif parentGalaxy == "SKC_CtrlB":
-        barycenterDistG = baryGenRNG.randint(Settings.minStarDistance/5,Settings.maxStarDistance*10)/11
+        barycenterDistG = baryGenRNG.randint(Settings.minStarDistance//5,Settings.maxStarDistance*10)/11
     else:
-        barycenterDistG = baryGenRNG.randint(Settings.minStarDistance/5,Settings.maxStarDistance*10)
+        barycenterDistG = baryGenRNG.randint(Settings.minStarDistance//5,Settings.maxStarDistance*10)
     if star1Mass > star2Mass:
         ML = star1Mass # Larger object mass.
         MS = star2Mass # Smaller object mass.
@@ -2107,7 +2102,7 @@ def systemLoop(queue, starAmnt, planetAmnt, moonAmnt, asteroidAmnt, targetFilepa
         AmountOfPlanetsToGenerate, AmountOfMoonsToGenerate, AmountOfAsteroidsToGenerate, minPlanets, minMoons = overrideValues
 
     global targetPath
-    targetPath = targetFilepath + "/InfiniteDiscoveries/"
+    targetPath = targetFilepath + "/InfiniteDiscoveries"
 
     for i in range(0,StarAmount):
         randomSeedRNG = random.Random()
@@ -2157,7 +2152,10 @@ def systemLoop(queue, starAmnt, planetAmnt, moonAmnt, asteroidAmnt, targetFilepa
 
 def waitForThreadsToFinish(mainThread, idk):
     mainThread.join()
-    for thread in allThreads:
+    for i, thread in enumerate(allThreads):
+        print("----------- Thread joined: " + str(thread))
+        nextThread = allThreads[i+1] if i < len(allThreads)-1 else None
+        print("--- Waiting for next thread: " + str(nextThread))
         thread.join()
     global mainThreadFinished
     mainThreadFinished = True
@@ -2180,713 +2178,22 @@ def startLoop(starAm,planetAm,moonAM,asteroidAM,targetPath,customSeed=None,overr
     waitForThreadsToFinishThread = threading.Thread(target=waitForThreadsToFinish, args=(loopProcess,None))
     waitForThreadsToFinishThread.start()
 
-def openSettings():
-
-    importlib.reload(Settings)
-
-
-    with open("Settings.py", "r") as settingsFile:
-        settingsData = settingsFile.readlines()
-
-    usesMultithreading = Settings.useMultithreading
-
-    convertsToDDS = Settings.convertTexturesToDDS
-
-    fantasyNames = Settings.fantasyNames
-
-    minPlanets = Settings.minPlanets
-    minMoons = Settings.minMoons
-
-    showConsole = Settings.showConsole
-
-    useThreadingText = sg.Text(textwrap.fill("Multithreading drastically improves efficiency but might increase CPU usage.", 40), background_color="#1f2836")
-    useThreadingCheck = sg.Checkbox("Use Multithreading", default=usesMultithreading, key="useMultithreading")
-    useThreadingLayout = [[useThreadingCheck],[useThreadingText]]
-    useThreadingFrame = sg.Frame("Multithreading",layout=useThreadingLayout)
-
-    convertToDDSText = sg.Text(textwrap.fill("Converting maps to DDS improves RAM usage ingame, but takes a bit longer and requires ImageMagick.", 40), background_color="#1f2836")
-    convertToDDSCheck = sg.Checkbox("Convert Textures to DDS", default=convertsToDDS, key="convertsToDDS")
-    convertToDDSLayout = [[convertToDDSCheck],[convertToDDSText]]
-    convertToDDSrame = sg.Frame("DDS Conversion",layout=convertToDDSLayout)
-
-    fantasyNamesText = sg.Text(textwrap.fill("Fantasy names do not affect anything, but simply adds some more creative names to celestial bodies.", 40), background_color="#1f2836")
-    fantasyNamesCheck = sg.Checkbox("Use Fantasy Names", default=fantasyNames, key="fantasyNames")
-    fantasyNamesLayout = [[fantasyNamesCheck],[fantasyNamesText]]
-    fantasyNamesrame = sg.Frame("Fancy Names",layout=fantasyNamesLayout)
-
-    minPlanetsBox = sg.Input(str(minPlanets), key="minPlanetsInp", enable_events=True, size=(12,10), expand_y=False, expand_x=False)
-    minPlanetsLayout = [[minPlanetsBox]]
-    minPlanetsFrame = sg.Frame("Minimum Planets", layout=minPlanetsLayout)
-
-    minMoonsBox = sg.Input(str(minMoons), key="minMoonsInp", enable_events=True, size=(12,10), expand_y=False, expand_x=False)
-    minMoonsLayout = [[minMoonsBox]]
-    minMoonsFrame = sg.Frame("Minimum Moons", layout=minMoonsLayout)
-
-    variablesLayout = [[useThreadingFrame],[convertToDDSrame],[fantasyNamesrame],[minPlanetsFrame,minMoonsFrame]]
-
-    variablesFrame = sg.Frame("Generator Settings", layout=variablesLayout, expand_x=True, expand_y=True)
-
-    showConsoleText = sg.Text(textwrap.fill("Shows the console in the background. Requires a restart to apply.", 40), background_color="#1f2836")
-    showConsoleCheck = sg.Checkbox("Show Console", default=showConsole, key="showConsole")
-    showConsoleLayout = [[showConsoleCheck],[showConsoleText]]
-    showConsoleFrame = sg.Frame("Console",layout=showConsoleLayout)
-
-    UIvariablesLayout = [[showConsoleFrame]]
-
-    UIvariablesFrame = sg.Frame("UI Settings", layout=UIvariablesLayout, expand_x=True, expand_y=True)
-
-    applyButton = sg.Button("Apply", key="Apply")
-
-    applyLayout = [[applyButton]]
-
-    applyFrame = sg.Frame("", layout=applyLayout)
-
-    settingsLayout = [[variablesFrame,UIvariablesFrame],[applyFrame]]
-
-
-    settingsWindow = sg.Window(title="Settings", layout=settingsLayout, size=(300,450), resizable=False, finalize=True, background_color="#1f2836")
-
-    settingsWindow.TKroot.minsize(600,450)
-
-
-    while True:
-        event, values = settingsWindow.read()
-
-        if event == "minPlanetsInp":
-            try: 
-                int(values["minPlanetsInp"])
-            except:
-                print("Not a number!")
-                settingsWindow["minPlanetsInp"].update(values["minPlanetsInp"][:-1])
-
-        if event == "minMoonsInp":
-            try: 
-                int(values["minMoonsInp"])
-            except:
-                print("Not a number!")
-                settingsWindow["minMoonsInp"].update(values["minMoonsInp"][:-1])
-
-        if event == "Apply":
-            usesMultithreading = values["useMultithreading"]
-            print(usesMultithreading)
-            settingsData[2] = "useMultithreading = " + str(usesMultithreading) + " # Will use multithreading, this will drastically increase generator efficiency and thus result in faster generation, but may increase CPU usage." + "\n"
-
-            convertsToDDS = values["convertsToDDS"]
-            print(convertsToDDS)
-            settingsData[6] = "convertTexturesToDDS = " + str(convertsToDDS) + " # Will remove the requirement for ImageMagick and reduce generator time if false. Will also increase KSP loading time so setting to false is not recommended." + "\n"
-
-            fantasyNames = values["fantasyNames"]
-            print(fantasyNames)
-            settingsData[11] = "fantasyNames = " + str(fantasyNames) + " # Generate a fantasy name for bodies. Will not affect internal names!" + "\n"
-
-            minPlanets = int(values["minPlanetsInp"])
-            print(minPlanets)
-            settingsData[8] = "minPlanets = " + str(minPlanets) + " # Minimum number of planets per star." + "\n"
-
-            minMoons = int(values["minMoonsInp"])
-            print(minMoons)
-            settingsData[9] = "minMoons = " + str(minMoons) + " # Minimum number of moons per star." + "\n"
-
-            showConsole = values["showConsole"]
-            print(showConsole)
-            settingsData[13] = "showConsole = " + str(showConsole) + " # Whether or not to show the console." + "\n"
-
-            with open("Settings.py", "w") as settingsFile:
-                settingsFile.writelines( settingsData )
-
-            print(threading.current_thread())
-
-        if event == sg.WIN_CLOSED:
-            break
-
-def openDelete(targetPath):
-
-    explText = textwrap.fill("The below input requires the star's internal name. You can find it by going ingame and looking at the description, where the name is formatted as 'AA-11111' WARNING: will delete EVERY config/texture containing what you inputted! Leave blank to delete everything.", width=40)
-
-    explanation = sg.Text(explText)
-
-    starDelInput = sg.Input(key="deleteStarValue")
-
-    starDelButton = sg.Button("Delete", button_color="#e65045", key="deleteStar")
-
-    deleteSystemsLayout = [[explanation],[starDelInput],[starDelButton]]
-
-    deleteSystemsFrame = sg.Frame("Delete star", layout=deleteSystemsLayout, expand_x=True, expand_y=False)
-
-    deleteAllButton = sg.Button("Remove Directory", button_color="#e65045", key="deleteALL")
-
-    deleteAllLayout = [[deleteAllButton]]
-
-    deleteAllFrame = sg.Frame("Warning: this will delete the mod from KSP!", layout=deleteAllLayout, expand_x=True, expand_y=False)
-
-    deleteLayout = [[deleteSystemsFrame],[deleteAllFrame]]
-
-    deleteWindow = sg.Window(title="Delete Systems", layout=deleteLayout, size=(300,300), resizable=False, finalize=True, background_color="#1f2836")
-
-    deleteStarAreYouSure = False
-
-    deleteDirAreYouSure = False
-
-    targetPath
-
-    print(targetPath)
-
-    textureDir = targetPath + "/InfiniteDiscoveries" + "/Textures/PluginData"
-    configDir = targetPath + "/InfiniteDiscoveries" + "/Configs"
-    cacheDir = targetPath + "/InfiniteDiscoveries" + "/Cache"
-    visual_ScattererDir = targetPath + "/InfiniteDiscoveries" + "/Visuals/Scatterer"
-    visual_EveConfigDir = targetPath + "/InfiniteDiscoveries" + "/Visuals/Eve/Configs"
-    visual_ParallaxDir = targetPath + "/InfiniteDiscoveries" + "/Visuals/Parallax/Configs"
-    visual_CloudMapDir = targetPath + "/InfiniteDiscoveries" + "/Textures/Clouds"
-    visual_NiftyNebulaeDir = targetPath + "/InfiniteDiscoveries" + "/Visuals/NiftyNebulae"
-    misc_RRDir = targetPath + "/InfiniteDiscoveries" + "/Misc/RR"
-
-    allDirs = [textureDir, configDir, cacheDir, visual_ScattererDir, visual_EveConfigDir, visual_ParallaxDir, visual_CloudMapDir, visual_NiftyNebulaeDir, misc_RRDir]
-
-    def areYouSureWait(thing, text):
-        time.sleep(2)
-        global deleteStarAreYouSure
-        deleteStarAreYouSure = False
-        thing.update(text)
-
-    def areYouSureAllWait(thing, text):
-        time.sleep(2)
-        global deleteDirAreYouSure
-        deleteDirAreYouSure = False
-        thing.update(text)
-
-    while True:
-        event, values = deleteWindow.read()
-
-        if event == "deleteStar":
-            if deleteStarAreYouSure == False:
-                deleteStarAreYouSure = True
-                deleteWindow["deleteStar"].update("Are You Sure? This CANNOT be undone!")
-                areYouSureThread = threading.Thread(target=areYouSureWait, args=(deleteWindow["deleteStar"], "Delete"))
-                areYouSureThread.start()
-            else:
-                targetStar = values["deleteStarValue"]
-                print(targetStar)
-                try:
-                    for e in range(0,len(allDirs)):
-                        currentDir = allDirs[e]
-                        for f in os.listdir(currentDir):
-                            if targetStar in f:
-                                os.remove(os.path.join(currentDir, f))
-                except FileNotFoundError:
-                    deleteWindow["deleteStar"].update("Directory doesn't exist!")
-                    areYouSureThread = threading.Thread(target=areYouSureWait, args=(deleteWindow["deleteStar"], "Delete"))
-                    areYouSureThread.start()
-
-        if event == "deleteALL":
-            if deleteDirAreYouSure == False:
-                deleteDirAreYouSure = True
-                deleteWindow["deleteALL"].update("Are You Sure? This CANNOT be undone!")
-                areYouSureThread = threading.Thread(target=areYouSureAllWait, args=(deleteWindow["deleteALL"], "Remove Directory"))
-                areYouSureThread.start()
-            else:
-                try:
-                    shutil.rmtree(targetPath + "/InfiniteDiscoveries")
-                except FileNotFoundError:
-                    deleteWindow["deleteALL"].update("Directory doesn't exist!")
-                    areYouSureThread = threading.Thread(target=areYouSureAllWait, args=(deleteWindow["deleteALL"], "Remove Directory"))
-                    areYouSureThread.start()
-
-        if event == sg.WIN_CLOSED:
-            break
-
-def openHelp():
-    noticeWindow = sg.Window(title="Infinite Discoveries Help", layout=[[]])
-    noticeWindow.read()
-
-def startUI():
-
-    amountValues = [1,5,4,2] # Default
-
-    #sg.Window(title="Hello World", layout=[[]], margins=(100, 50)).read()
-
-    actionText = ""
-
-    inputButtonSize = (12,10)
-
-    currentObjectText = sg.Text("Generator is not currently running.", background_color=("#0c0f1a"), key="currentFocusText")
-
-    currentActionText = sg.Multiline(background_color=("#0c0f1a"), key="currentActionText", expand_y=True, expand_x=True, text_color=("#ffffff"), autoscroll=True, enable_events=True, do_not_clear=True)
-
-    currentActionLayout = [[currentObjectText],[currentActionText]]
-
-    currentActionFrame = sg.Column(layout=currentActionLayout, background_color=("#0c0f1a"), key="currentActionFrame", expand_y=True, expand_x=True)
-
-    startAmountDescText = "Recommended values are however many stars, 7 planets and 3 moons. Higher amounts will generate planets/moons further out and might start causing issues. Make sure to select the KSP GameData folder as the directory."
-
-    starAmountDescription = sg.Text(textwrap.fill(startAmountDescText, 49), expand_y=False, expand_x=True, pad=(5,5), key="starAmountDesc")
-
-    starAmountInp = sg.Input(default_text=amountValues[0], key="starAmountInput", enable_events=True, size=inputButtonSize, expand_y=False, expand_x=True)
-    starAmountLayout = [[starAmountInp]]
-    starAmountFrame = sg.Frame("Star amount", layout=starAmountLayout, expand_y=True, expand_x=True, pad=(5,5))
-    planetAmountInp = sg.Input(default_text=amountValues[1], key="planetAmountInput", enable_events=True, size=inputButtonSize, expand_y=False, expand_x=True)
-    planetAmountLayout = [[planetAmountInp]]
-    planetAmountFrame = sg.Frame("Max planets", layout=planetAmountLayout, expand_y=True, expand_x=True, pad=(5,5))
-    moonAmountInp = sg.Input(default_text=amountValues[2], key="moonAmountInput", enable_events=True, size=inputButtonSize, expand_y=False, expand_x=True)
-    moonAmountLayout = [[moonAmountInp]]
-    moonAmountFrame = sg.Frame("Max moons", layout=moonAmountLayout, expand_y=True, expand_x=True, pad=(5,5))
-    asteroidAmountInp = sg.Input(default_text=amountValues[3], key="asteroidAmountInput", enable_events=True, size=inputButtonSize, expand_y=False, expand_x=True)
-    asteroidAmountLayout = [[asteroidAmountInp]]
-    asteroidAmountFrame = sg.Frame("Max asteroids", layout=asteroidAmountLayout, expand_y=True, expand_x=True, pad=(5,5))
-
-    numInpLayout = [[starAmountFrame, planetAmountFrame, moonAmountFrame, asteroidAmountFrame],[starAmountDescription]]
-
-    amountInpFrame = sg.Frame("", layout=numInpLayout, background_color=("#43474d"), expand_y=False, expand_x=True, pad=(10,0))
-
-    startButton = sg.pin(sg.Button(button_text="Start Generator", size=(25,5), key="startGenerator", visible=True, expand_y=False, expand_x=True, pad=(10,0)), expand_x=True)
-
-    estTimeText = sg.Text("Estimated Generator Time: 26.25 minutes.", key="timeRemainingText", background_color=("#43474d"), expand_y=False, expand_x=True)
-
-    directoryText = sg.Input(targetPath, size=(30,10), key="directoryText", enable_events=True, expand_y=False, expand_x=True)
-
-    directoryBrowser = sg.FolderBrowse("Set GameData folder...", key="directoryButton", enable_events=True, initial_folder=targetPath)
-
-    #statsDesc = sg.Text("Current Statistics:", key="stats_Desc", background_color=("#43474d"), expand_y=False, expand_x=True)
-    
-    statsSystemAmount = sg.Text("Amount of systems: ????", key="stats_SystemAmount", background_color=("#43474d"), expand_y=False, expand_x=True)
-    statsConfigAmount = sg.Text("Amount of configs: ????", key="stats_ConfigAmount", background_color=("#43474d"), expand_y=False, expand_x=True)
-    statsTextureAmount = sg.Text("Amount of textures: ????", key="stats_TextureAmount", background_color=("#43474d"), expand_y=False, expand_x=True)
-
-    statsLayout = [[statsSystemAmount],[statsConfigAmount],[statsTextureAmount]]
-
-    statsFrame = sg.Frame("Current statistics", layout=statsLayout, expand_y=False, expand_x=True, background_color="#43474d")
-
-    okToAccess = sg.Text("To write or not to write? That is the question.", background_color=("#43474d"), expand_x=True, key="okToAccess")
-
-    InfDLayout = [[sg.Text("Infinite Discoveries", background_color=("#43474d"))], [amountInpFrame], [directoryText,directoryBrowser], [okToAccess], [estTimeText], [startButton], [statsFrame]]
-
-    InfDOutputLayout = [[currentActionFrame]]
-
-    settingsButton = sg.Button("Settings", image_size=(50,50), key="openSettings")
-
-    settingsLayout = [[settingsButton]]
-
-    settingsFrame = sg.Frame("", layout=settingsLayout)
-
-    deleteButton = sg.Button("Delete", image_size=(50,50), key="openDelete")
-
-    deleteLayout = [[deleteButton]]
-
-    deleteFrame = sg.Frame("", layout=deleteLayout)
-
-    infoButton = sg.Button("Help", image_size=(50,50), key="openHelp")
-
-    infoLayout = [[infoButton]]
-
-    infoFrame = sg.Frame("", layout=infoLayout)
-
-    seedText = sg.Text("Custom Seed")
-    seedInput = sg.Input("", key="setSeed", enable_events=True, size=(20,0))
-
-    seedLayout = [[seedInput,seedText]]
-
-    seedFrame = sg.Frame("", layout=seedLayout, element_justification="c",tooltip="Setting a custom seed will limit the star amount to 1. Seeds must be integers between 0 and 2^32 - 1")
-
-    InputFrame = sg.Frame("", layout=InfDLayout, expand_y=True, expand_x=True, element_justification="c", background_color="#50535c")
-
-    OutputFrame = sg.Frame("", layout=InfDOutputLayout, expand_y=True, expand_x=True, element_justification="c", background_color="#50535c")
-
-    fullLayout = [[InputFrame,OutputFrame],[settingsFrame,deleteFrame,infoFrame,seedFrame]]
-
-    InfDWindow = sg.Window(title="Infinite Discoveries 0.9.9", layout=fullLayout, size=(800,500), margins=(5,0), resizable=True, finalize=True background_color="#1f2836")
-
-    InfDWindow.TKroot.minsize(700,500)
-
-    # Things??
-
-    lastMoment = 0
-
-    ActionLog = open(base_dir / "ActionLog.txt", "w")
-    ActionLog = open(base_dir / "ActionLog.txt", "a")
-
-    if Settings.convertTexturesToDDS == True:
-        try:
-            from wand import image as wImage
-        except:
-            #print("ImageMagick is not installed, install it from: https://docs.wand-py.org/en/latest/guide/install.html#install-imagemagick-on-windows")
-            noticeText = textwrap.fill("ImageMagick is not installed! You can continue to run the program as intended, but it will not convert textures to DDS.", 40)
-            noticeLayour = [[sg.Text(noticeText)]]
-            noticeWindow = sg.Window(title="Notice", layout=noticeLayour)
-            noticeWindow.read()     
-
-        def setStarAmntToOverriden():
-            InfDWindow["starAmountInput"].update(disabled=True)
-            InfDWindow["starAmountInput"].update("SEED SET")
-            InfDWindow["starAmountInput"].update(text_color="#6e6e6e")
-            InfDWindow["starAmountInput"].set_tooltip("Overriden due to setting a custom seed.")
-
-        def setStarAmntToDefault():
-            InfDWindow["starAmountInput"].update(disabled=False)
-            InfDWindow["starAmountInput"].update(amountValues[0])
-            InfDWindow["starAmountInput"].update(text_color="#000000")
-            InfDWindow["starAmountInput"].set_tooltip(None)
-
-        def setOtherAmntToOverriden():
-            InfDWindow["planetAmountInput"].update(disabled=True)
-            InfDWindow["planetAmountInput"].update("SEED SET")
-            InfDWindow["planetAmountInput"].update(text_color="#6e6e6e")
-            InfDWindow["planetAmountInput"].set_tooltip("Overriden due to setting a custom seed.")
-
-            InfDWindow["moonAmountInput"].update(disabled=True)
-            InfDWindow["moonAmountInput"].update("SEED SET")
-            InfDWindow["moonAmountInput"].update(text_color="#6e6e6e")
-            InfDWindow["moonAmountInput"].set_tooltip("Overriden due to setting a custom seed.")
-
-            InfDWindow["asteroidAmountInput"].update(disabled=True)
-            InfDWindow["asteroidAmountInput"].update("SEED SET")
-            InfDWindow["asteroidAmountInput"].update(text_color="#6e6e6e")
-            InfDWindow["asteroidAmountInput"].set_tooltip("Overriden due to setting a custom seed.")
-
-        def setOtherAmntToDefault():
-            InfDWindow["planetAmountInput"].update(disabled=False)
-            InfDWindow["planetAmountInput"].update(amountValues[1])
-            InfDWindow["planetAmountInput"].update(text_color="#000000")
-            InfDWindow["planetAmountInput"].set_tooltip(None)
-
-            InfDWindow["moonAmountInput"].update(disabled=False)
-            InfDWindow["moonAmountInput"].update(amountValues[2])
-            InfDWindow["moonAmountInput"].update(text_color="#000000")
-            InfDWindow["moonAmountInput"].set_tooltip(None)
-
-            InfDWindow["asteroidAmountInput"].update(disabled=False)
-            InfDWindow["asteroidAmountInput"].update(amountValues[3])
-            InfDWindow["asteroidAmountInput"].update(text_color="#000000")
-            InfDWindow["asteroidAmountInput"].set_tooltip(None)
-
-    running = False
-    import os
-    while True:
-        event, values = InfDWindow.read(timeout=100)
-
-        if event == "starAmountInput":
-            try: 
-                int(values["starAmountInput"])
-            except:
-                print("Not a number!")
-                InfDWindow["starAmountInput"].update(values["starAmountInput"][:-1])
-
-        if event == "planetAmountInput":
-            try: 
-                int(values["planetAmountInput"])
-                if int(values["planetAmountInput"]) > 25:
-                    InfDWindow["planetAmountInput"].update(25)
-            except:
-                print("Not a number!")
-                InfDWindow["planetAmountInput"].update(values["planetAmountInput"][:-1])
-
-        if event == "moonAmountInput":
-            try: 
-                int(values["moonAmountInput"])
-            except:
-                print("Not a number!")
-                InfDWindow["moonAmountInput"].update(values["moonAmountInput"][:-1])
-        
-        if event == "asteroidAmountInput":
-            try: 
-                int(values["asteroidAmountInput"])
-            except:
-                print("Not a number!")
-                InfDWindow["asteroidAmountInput"].update(values["asteroidAmountInput"][:-1])
-        try:
-            starAmount = int(values["starAmountInput"])
-        except:
-            starAmount = 0
-        try:
-            planetAmount = int(values["planetAmountInput"])
-        except:
-            planetAmount = 0
-        try:
-            moonAmount = int(values["moonAmountInput"])
-        except:
-            moonAmount = 0
-        try:
-            asteroidAmount = int(values["asteroidAmountInput"])
-        except:
-            asteroidAmount = 0
-
-        #overrideSeed = False
-        #overrideValues = False
-
-        if event == "setSeed":
-            customSeedInput = values["setSeed"]
-            seperatedValues = customSeedInput.split(".")
-            if not customSeedInput == "":
-                if len(seperatedValues) > 1:
-                    if len(seperatedValues[1]) >= 9 and len(seperatedValues[1]) <= 14:
-                        try:
-                            customSeed = int(seperatedValues[0])
-                            fullySeperatedValues = seperatedValues[1].split(":")
-                            maxPlanetOvrd = int(fullySeperatedValues[0])
-                            maxMoonOvrd = int(fullySeperatedValues[1])
-                            maxAsteroidOvrd = int(fullySeperatedValues[2])
-                            minPlanetOvrd = int(fullySeperatedValues[3])
-                            minMoonOvrd = int(fullySeperatedValues[4])
-                            #maxPlanetOvrd, maxMoonOvrd, maxAsteroidOvrd, minPlanetOvrd, minMoonOvrd = seperatedValues[1].split(":")
-                            if customSeed >= 0 and customSeed < (2**32):
-                                print("Seed and overrides set.") # This is the part where there is both valid seed and overrides!
-                                setStarAmntToOverriden()
-                                setOtherAmntToOverriden()
-                                overrideSeed = True # True
-                                overrideValues = True # True
-                            else:
-                                print("ERROR: Seed out of bounds!")
-                                setStarAmntToDefault()
-                                setOtherAmntToDefault()
-                                overrideSeed = False
-                                overrideValues = False
-                        except:
-                            print("ERROR: Seed or overrides not integers!")
-                            setStarAmntToDefault()
-                            setOtherAmntToDefault()
-                            overrideSeed = False
-                            overrideValues = False
-                    else:
-                        try:
-                            customSeed = int(seperatedValues[0])
-                            if customSeed >= 0 and customSeed < (2**32):
-                                print("Only seed applied. Invalid overrides.") # This is the part where a valid seed is set despite invalid overrides!
-                                setStarAmntToOverriden()
-                                setOtherAmntToDefault()
-                                overrideSeed = True # True
-                                overrideValues = False
-                            else:
-                                print("ERROR: Seed out of bounds! (Also invalid overrides.)")
-                                setStarAmntToDefault()
-                                setOtherAmntToDefault()
-                                overrideSeed = False
-                                overrideValues = False
-                        except:
-                            print("ERROR: Seed not integer! (Also invalid overrides.)")
-                            setStarAmntToDefault()
-                            setOtherAmntToDefault()
-                            overrideSeed = False
-                            overrideValues = False
-                else:
-                    try:
-                        customSeed = int(seperatedValues[0])
-                        if customSeed >= 0 and customSeed < (2**32):
-                            print("Only seed applied.") # This is the part where a valid seed is set! (ONLY SEED, NO OVERRIDES.)
-                            setStarAmntToOverriden()
-                            setOtherAmntToDefault()
-                            overrideSeed = True # True
-                            overrideValues = False
-                        else:
-                            setStarAmntToDefault()
-                            setOtherAmntToDefault()
-                            print("ERROR: Seed out of bounds!")
-                            overrideSeed = False
-                            overrideValues = False
-                    except:
-                        print("ERROR: Seed not integer!")
-                        setStarAmntToDefault()
-                        setOtherAmntToDefault()
-                        overrideSeed = False
-                        overrideValues = False
-            else:
-                print("No seed set.")
-                setStarAmntToDefault()
-                setOtherAmntToDefault()
-                overrideSeed = False
-                overrideValues = False
-
-
-        if event == "directoryText" or event == "starAmountInput" or event == "planetAmountInput" or event == "moonAmountInput" or event == "asteroidAmountInput":
-            targetPath = values["directoryText"]
-            print("Setting directory to: " + targetPath)
-            print("Values are: " + "[" + str(starAmount) + "," + str(planetAmount) + "," + str(moonAmount) + "," + str(asteroidAmount) + "]")
-            # cacheFile = open(cachePath, "w")
-            # cacheFile.write(
-            #     'filepath = "' + targetPath + '"' + "\n"
-            #     "numbers = " + "[" + str(starAmount) + "," + str(planetAmount) + "," + str(moonAmount) + "," + str(asteroidAmount) + "]" + "\n"
-            # )
-            # cacheFile.close()
-
-        if event == "openSettings":
-            openSettings()
-
-        if event == "openDelete":
-            openDelete(targetPath)
-
-        if event == "openHelp":
-            openHelp()
-
-        if Settings.useMultithreading == True:
-            estTime = (((planetAmount * moonAmount * asteroidAmount) * starAmount)*15)/6.17
-        else:
-            estTime = ((planetAmount * moonAmount * asteroidAmount) * starAmount)*15
-
-        if estTime >= 60:
-            if estTime >= 3600:
-                if estTime >= 86400:
-                    if estTime >= 604800:
-                        if estTime >= 2.628e+6:
-                            if estTime >= 3.154e+7:
-                                InfDWindow["timeRemainingText"].update("Estimated Generator Time: " + str(round((estTime/3.154e+7),2)) + " years.")
-                            else:
-                                InfDWindow["timeRemainingText"].update("Estimated Generator Time: " + str(round((estTime/2.628e+6),2)) + " months.")
-                        else:
-                            InfDWindow["timeRemainingText"].update("Estimated Generator Time: " + str(round((estTime/604800),2)) + " weeks.")
-                    else:
-                        InfDWindow["timeRemainingText"].update("Estimated Generator Time: " + str(round((estTime/86400),2)) + " days.")
-                else:
-                    InfDWindow["timeRemainingText"].update("Estimated Generator Time: " + str(round((estTime/3600),2)) + " hours.")
-            else:
-                InfDWindow["timeRemainingText"].update("Estimated Generator Time: " + str(round((estTime/60),2)) + " minutes.")
-        else:
-            InfDWindow["timeRemainingText"].update("Estimated Generator Time: " + str(round((estTime),2)) + " seconds.")
-
-        #print("fine")
-
-        #if not len(queue) < 1:
-        #    for i in len(queue):
-        #        allActions.append(queue[i])
-
-        actionText = ""
-
-        if state.allActionArrayUpdated == True:
-            for a in range(lastMoment,len(allActions)):
-                lastMoment = lastMoment + 1
-                currentAction = allActions[a]
-                actionText = str(currentAction[0].tm_hour) + ":" + str(currentAction[0].tm_min) + ":" + str(currentAction[0].tm_sec) + " - " + currentAction[1] + "\n"
-                InfDWindow["currentActionText"].update(actionText,append=True)
-                ActionLog.write(actionText)
-                ActionLog.flush()
-            state.allActionArrayUpdated = False
-
-        if running == True:
-            #print(amountOfThingsDone/amountOfThingsToDo)
-            try:
-                InfDWindow["startGenerator"].update(str((amountOfThingsDone/amountOfThingsToDo)*100) + "%")
-            except ZeroDivisionError:
-                print("Division by zero (ignore this)")
-
-        if event == "startGenerator":
-            #InfDWindow.set_icon(filepath + "/UIdata/StatusIcons/Icon_Working.ico")
-            try: 
-                int(values["starAmountInput"])
-                try: 
-                    int(values["planetAmountInput"])
-                    try: 
-                        int(values["moonAmountInput"])
-                        try:
-                            int(values["asteroidAmountInput"])
-                        except:
-                            print("Not a number!")
-                    except:
-                        print("Not a number!")
-                except:
-                    print("Not a number!")
-            except:
-                print("Not a number!")
-
-            print("The generator should take AT MOST " + str(round((estTime/60),2)) + " minutes.")
-
-            InfDWindow["currentFocusText"].update("Generator is active.")
-            InfDWindow["startGenerator"].update("0%")
-            InfDWindow["startGenerator"].update(disabled=True)
-
-            running = True
-
-            #InfDWindow["startGenerator"].hide_row()
-
-            #allActions.append("Making directory at: " + targetPath)
-
-            #os.makedirs(targetPath + "/InfiniteDiscoveries_Systems", exist_ok=True)
-
-            #print(currentActionLayout)
-
-            #time.sleep(1)
-
-            #systemThread = threading.Thread(target=systemLoop, args=(queue,starAmount,planetAmount,moonAmount,targetPath))
-            #systemThread.run()
-
-            if not values["setSeed"] == "":
-                if overrideSeed == True and overrideValues == False:
-                    startLoop(starAmount,planetAmount,moonAmount,asteroidAmount,targetPath,customSeed)
-                elif overrideSeed == True and overrideValues == True:
-                    startLoop(starAmount,planetAmount,moonAmount,asteroidAmount,targetPath,customSeed,[maxPlanetOvrd,maxMoonOvrd,maxAsteroidOvrd,minPlanetOvrd,minMoonOvrd])
-                else:
-                    startLoop(starAmount,planetAmount,moonAmount,asteroidAmount,targetPath)
-                global mainThreadFinished
-                mainThreadFinished = False
-            else:
-                startLoop(starAmount,planetAmount,moonAmount,asteroidAmount,targetPath)
-                mainThreadFinished = False
-
-            #for a in allThreads:
-            #    a.join()
-        if mainThreadFinished == True:
-            #InfDWindow.set_icon(filepath + "/UIdata/StatusIcons/Icon_Idle.ico")
-            #InfDWindow["startGenerator"].unhide_row()
-            InfDWindow["currentFocusText"].update("Generator is finished!")
-            InfDWindow["startGenerator"].update("Generate")
-            InfDWindow["startGenerator"].update(disabled=False)
-
-            running = False
-
-            InfDWindow.refresh()
-
-        try:
-            allKopConfigs = os.listdir(targetPath + "/InfiniteDiscoveries/Configs/")
-            allEVEConfigs = os.listdir(targetPath + "/InfiniteDiscoveries/Visuals/EVE/Configs/")
-            allParallaxConfigs = os.listdir(targetPath + "/InfiniteDiscoveries/Visuals/Parallax/Configs/")
-            #allKopConfigs = os.listdir(targetPath + "/InfiniteDiscoveries/Visuals/Parallax/Configs/")
-            allTextures = os.listdir(targetPath + "/InfiniteDiscoveries/Textures/PluginData/")
-            allCloudTextures = os.listdir(targetPath + "/InfiniteDiscoveries/Textures/Clouds/")
-            allALLTextures = allTextures + allCloudTextures
-            #print(len(allKopConfigs))
-            allScattererConfigs = os.listdir(targetPath + "/InfiniteDiscoveries/Visuals/Scatterer/")
-            allRRConfigs = os.listdir(targetPath + "/InfiniteDiscoveries/Misc/RR/")
-            #print(len(allScattererConfigs))
-            allSystems = []
-            for scattererCfg in allScattererConfigs:
-                if "ScattererSunflare" in scattererCfg:
-                    systemName = scattererCfg.replace("ScattererSunflare", "").replace("_", "").replace(".cfg", "").replace("1","").replace("2","").replace("-","")
-                    allSystems.append(systemName)
-                    #print(systemName)
-            #print(len(allSystems))
-            allSystemsREAL = np.unique(allSystems)
-
-            allConfigs = allKopConfigs + allEVEConfigs + allParallaxConfigs + allScattererConfigs + allRRConfigs
-            #print(allConfigs)
-            InfDWindow["stats_SystemAmount"].update("Amount of systems: " + str(len(allSystemsREAL)))
-            InfDWindow["stats_ConfigAmount"].update("Amount of configs: " + str(len(allConfigs)))
-            InfDWindow["stats_TextureAmount"].update("Amount of textures: " + str(len(allALLTextures)))
-        except:
-            InfDWindow["stats_SystemAmount"].update("Amount of systems: No directory!")
-            InfDWindow["stats_ConfigAmount"].update("Amount of configs: No directory!")
-            InfDWindow["stats_TextureAmount"].update("Amount of textures: No directory!")
-
-        if os.access(targetPath, os.W_OK):
-            InfDWindow["okToAccess"].update("Selected directory can be written to.")
-            InfDWindow["okToAccess"].update(text_color=("#8fff8f"))
-        else:
-            InfDWindow["okToAccess"].update("Cannot write to selected directory!")
-            InfDWindow["okToAccess"].update(text_color=("#ff8f8f"))
-
-        if event == sg.WINDOW_CLOSED:
-            global everythingEnded
-            everythingEnded = True
-            import os
-            import signal
-
-            # Get the process ID (PID) of the current Python process
-            current_pid = os.getpid()
-
-            print(current_pid)
-
-            # Terminate the current process using its PID
-            os.kill(current_pid, signal.SIGTERM)
-
-            break
+from ui import MainUI
 
 if currentProcess.name == "MainThread":
-    startUI()
+    app = MainUI(
+        targetPath=targetPath,
+        base_dir=base_dir,
+        Settings=Settings,
+        state=state,
+        startLoop=startLoop,
+        allActions=allActions,
+        allThreads=allThreads,
+        mainThreadFinished=mainThreadFinished,
+        amountOfThingsDone=amountOfThingsDone,
+        amountOfThingsToDo=amountOfThingsToDo
+    )
+    app.mainloop()
 
 #print("gagagaga")
 

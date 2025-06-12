@@ -1,58 +1,64 @@
 # Infinite-Discoveries
-Infinite Discoveries is a randomized star system generator for KSP.
+Infinite Discoveries is a randomized star system generator for KSP, so you never run of stars and planets to explore.  
+This is a fork of the [original script](https://github.com/Sushutt/Infinite-Discoveries) that improves on a number of things (see below).
 
-## How to install Infinite Discoveries (compiled version):
+## Features
+- **Procedural Star System Generation**  
+  Automatically generates unique star systems with stars, planets, and moons for Kerbal Space Program.
 
-1. Find a place to put it (anywhere works, except for the KSP directory.)
+- **Realistic Planetary Bodies**  
+  Each body features diverse terrain such as mountains, oceans, canyons, and ice caps.
 
-2. Move the "InfiniteDiscoveries" folder to the aforementioned place you found to put it in.
+- **Multiple Star Types**  
+  Supports various stellar classes:  
+  Main Sequence, Red Giant, White Dwarf, Neutron Star, Brown Dwarf, and Wolf-Rayet.
 
-3. Install ImageMagick (optional, best if you can though) https://imagemagick.org/script/download.php
-(ImageMagick is NOT a ksp mod, it is a standalone program! Install it like any other program.)
+- **Planetary Rings**  
+  Some planets are adorned with procedurally generated ring systems.
 
-4. Install Kopernicus to KSP.
+- **Life Possibilities**  
+  Worlds may support organic, exotic, aerial, or subglacial life, depending on atmospheric and surface conditions.
 
-## How to use:
+- **Atmospheric & Visual Effects**  
+  Includes support for atmospheric scattering, volumetric clouds, auroras, and more—automatically configured per body.
 
-1. Run the "InfiniteDiscoveries" shortcut inside the InfiniteDiscoveries folder, you can also make a shortcut to access it easily.
+- **Scientific Value System**  
+  Bodies are assigned science values based on their physical and environmental attributes.
 
-2. Set your target KSP GameData folder in the folder browser.
+- **Color-Coded Diversity**  
+  Stars and planets use a temperature-based color spectrum for realistic and aesthetic visuals.
 
-3. Adjust whatever settings you want.
+- **Infinite Replayability**  
+  Procedural generation ensures no two playthroughs are ever the same.
 
-4. Press the big "Start Generator" button.
+## HOW TO USE
+### Requirements (install first)
+- Python 3 (Tested on python3.13)
+- MagickWand (see below)
+- Kopernicus (and deps)
+- EVE & Scatterer (optional visuals)
+- Parallax (optional ground scatters)
+### Running
+- Navigate to the `GenerateSystems` directory
+- Do `pip install -r requirements.txt`. Use a venv if needed, and make sure you use the right pip
+- Do `python GenerateSystems.py`
+- Use the UI to set your settings and select your `GameData` directory
+- Hit generate and wait for it to finish  
+*Im working on packaging it so it's easier to run*
+### After generation
+- Check the `Configs` folder for any bad planet files (usually those with zero bytes or empty)
+- If you find any, you can either delete them, or delete the whole `InfiniteDiscoveries` folder and regenerate
+- Now you can boot up KSP and play
 
-5. Wait until the panel on the right says that the generator is finished.
+<details><summary>MagickWand Install</summary>
+`libmagickwand-dev` for APT on Debian/Ubuntu,
+`imagemagick` for MacPorts/Homebrew on Mac,
+`ImageMagick-devel` for Yum on CentOS
+</details>
 
-6. Start KSP and enjoy!
-
-
-## Running Infinite Discoveries from Source (OUTDATED, meant for commits prior to 1.0.0):
-
-### Make sure you have the following prerequisites:
-1. Visual Studio Code
-2. ImageMagick
-3. Python 3.whatever
-
-### Then install the following libraries:
-1. pip install pillow (https://pillow.readthedocs.io/en/stable/installation.html)
-2. pip install wand (https://imagemagick.org/index.php)
-3. pip install colour
-4. pip install noise
-5. pip install scipy
-
-### Running the program:
-1. Find the main branch on github, and click the green "Code" button, then click "Download ZIP."
-2. Put the InfiniteDiscoveries folder in your KSP GameData as you normally would.
-3. Open the .py file in the "GenerateSystem" folder via Visual Studio Code.
-4. Run the file in Visual Studio, I'm not really sure why it doesn't run outside it but that's how it works.
-5. Use the program as usual.
-
-# For people wanting to contribute (only applies to version 1.0.0 and over):
-
-Download the source code, add whatever change you need, and push to a new branch. Make sure to thouroughly explain your changes and why you deem them necessary.
-
-General guidelines / things to note:
-
-1. Do not make changes to files in the "UNUSED" folder.
-2. The "GenerateSystem" file is obsolete. All functionality is split in to its own file and/or class.
+## Improvements over the original
+- Code up the damn code (it's a big mess, I'm still working on it)
+- Full support for Mac and Linux (and Windows, of course)
+- Custom tkinter instead of the now paid pysimplegui
+- Fix several bugs in the original scripts (including solar panels not working)
+- Removed random unused assets (like a video of a thumbs up emoji, for whatever reason)

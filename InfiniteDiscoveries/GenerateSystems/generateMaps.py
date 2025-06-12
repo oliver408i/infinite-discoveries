@@ -44,7 +44,7 @@ def generatePlanetMaps(vacuum, terrainR, terrainG, terrainB, planetName, ocean, 
     #if tidallyLocked == True:
     #    print(eyeballType + "< IN WHAT FUCKING UNIVERSE" + str(finalTemp))
 
-    def convertToBiomeFeature(featureMap, colour, brighten1):
+    def convertToBiomeFeature(featureMap, colour, brighten1, biomeMap):
         biomeFeature = Image.new("RGBA", (4096,2048), colour)
         biomeFeature.putalpha(ImageEnhance.Brightness(ImageOps.posterize(ImageEnhance.Brightness((featureMap.getchannel("A"))).enhance(brighten1), 1)).enhance(2))
         biomeMap.paste(biomeFeature, (0,0), mask=biomeFeature)
@@ -779,54 +779,54 @@ def generatePlanetMaps(vacuum, terrainR, terrainG, terrainB, planetName, ocean, 
     biomeMap = ImageOps.posterize(imageContr, 2).convert("RGBA")
 
     try:
-        convertToBiomeFeature(canyonMap, (255,0,255), 10)
-    except NameError:
-        print("Ignoring")
+        convertToBiomeFeature(canyonMap, (255,0,255), 10, biomeMap)
+    except NameError as e:
+        print("Skipping biome feature for unknown map: " + str(e))
 
     try:
-        convertToBiomeFeature(mountainMap, (255,255,0), 1.75)
-    except NameError:
-        print("Ignoring")
+        convertToBiomeFeature(mountainMap, (255,255,0), 1.75, biomeMap)
+    except NameError as e:
+        print("Skipping biome feature for unknown map: " + str(e))
 
     try:
-        convertToBiomeFeature(craterMap, (0, 255, 150), 1.75)
-    except NameError:
-        print("Ignoring")
+        convertToBiomeFeature(craterMap, (0, 255, 150), 1.75, biomeMap)
+    except NameError as e:
+        print("Skipping biome feature for unknown map: " + str(e))
 
     try:
-        convertToBiomeFeature(small_craterMap, (0, 255, 150), 1.75)
-    except NameError:
-        print("Ignoring")
+        convertToBiomeFeature(small_craterMap, (0, 255, 150), 1.75, biomeMap)
+    except NameError as e:
+        print("Skipping biome feature for unknown map: " + str(e))
 
     try:
-        convertToBiomeFeature(large_craterMap, (0, 255, 150), 1.75)
-    except NameError:
-        print("Ignoring")
+        convertToBiomeFeature(large_craterMap, (0, 255, 150), 1.75, biomeMap)
+    except NameError as e:
+        print("Skipping biome feature for unknown map: " + str(e))
 
     try:
-        convertToBiomeFeature(ray_craterMap, (0, 255, 150), 1.75)
-    except NameError:
-        print("Ignoring")
+        convertToBiomeFeature(ray_craterMap, (0, 255, 150), 1.75, biomeMap)
+    except NameError as e:
+        print("Skipping biome feature for unknown map: " + str(e))
 
     try:
-        convertToBiomeFeature(ray_albedoMap, (150, 255, 150), 1.75)
-    except NameError:
-        print("Ignoring")
+        convertToBiomeFeature(ray_albedoMap, (150, 255, 150), 1.75, biomeMap)
+    except NameError as e:
+        print("Skipping biome feature for unknown map: " + str(e))
 
     try:
-        convertToBiomeFeature(volcanoMap, (255,0,0), 1.75)
-    except NameError:
-        print("Ignoring")
+        convertToBiomeFeature(volcanoMap, (255,0,0), 1.75, biomeMap)
+    except NameError as e:
+        print("Skipping biome feature for unknown map: " + str(e))
 
     try:
-        convertToBiomeFeature(activeVolcanoMap, (255,0,0), 1.75)
-    except NameError:
-        print("Ignoring")
+        convertToBiomeFeature(activeVolcanoMap, (255,0,0), 1.75, biomeMap)
+    except NameError as e:
+        print("Skipping biome feature for unknown map: " + str(e))
 
     try:
-        convertToBiomeFeature(lavaAlbedoMap, (255, 98, 0), 1.75)
-    except NameError:
-        print("Ignoring")
+        convertToBiomeFeature(lavaAlbedoMap, (255, 98, 0), 1.75, biomeMap)
+    except NameError as e:
+        print("Skipping biome feature for unknown map: " + str(e))
 
     if ocean == True:
         ocean_colored = Image.new("RGBA", (4096,2048), (0, 0, 50))
@@ -909,47 +909,47 @@ def generatePlanetMaps(vacuum, terrainR, terrainG, terrainB, planetName, ocean, 
     print("Finished generating colors. Time elapsed: " + str(clrEndTime) + " seconds.")
 
     print("Finished generating maps! Total time elapsed: " + str(noiseEndTime + nrmEndTime + clrEndTime) + " seconds.")
-    # if canConvertToDDS == True:
-    #     allActions.append([time.localtime(),"Converting maps to DDS for : " + planetName])
-    #     state.allActionArrayUpdated = True
-    #     print("Converting maps to DDS for " + planetName + "...")
-    #     texStartTime = time.time()
+    if canConvertToDDS == True:
+        allActions.append([time.localtime(),"Converting maps to DDS for : " + planetName])
+        state.allActionArrayUpdated = True
+        print("Converting maps to DDS for " + planetName + "...")
+        texStartTime = time.time()
 
-    #     #finalHeight2 = finalHeight.transpose(Image.FLIP_TOP_BOTTOM)
-    #     hgtConv = wImage.Image(filename= targetPath + "/Textures/PluginData/" + planetName + "_HGT" + ".png")
-    #     hgtConv.options['dds:mipmaps'] = '0'
-    #     hgtConv.compression = 'dxt5'
-    #     hgtConv.save(filename= targetPath + "/Textures/PluginData/" + planetName + "_HGT" + ".dds")
-    #     os.remove(targetPath + "/Textures/PluginData/" + planetName + "_HGT" + ".png")
+        #finalHeight2 = finalHeight.transpose(Image.FLIP_TOP_BOTTOM)
+        hgtConv = wImage.Image(filename= targetPath + "/Textures/PluginData/" + planetName + "_HGT" + ".png")
+        hgtConv.options['dds:mipmaps'] = '0'
+        hgtConv.compression = 'dxt5'
+        hgtConv.save(filename= targetPath + "/Textures/PluginData/" + planetName + "_HGT" + ".dds")
+        os.remove(targetPath + "/Textures/PluginData/" + planetName + "_HGT" + ".png")
 
-    #     nrmConv = wImage.Image(filename= targetPath + "/Textures/PluginData/" + planetName + "_NRM" + ".png")
-    #     #nrmConv.options['dds:mipmaps'] = '0'
-    #     nrmConv.compression = 'dxt5'
-    #     nrmConv.save(filename= targetPath + "/Textures/PluginData/" + planetName + "_NRM" + ".dds")
-    #     os.remove(targetPath + "/Textures/PluginData/" + planetName + "_NRM" + ".png")
+        nrmConv = wImage.Image(filename= targetPath + "/Textures/PluginData/" + planetName + "_NRM" + ".png")
+        #nrmConv.options['dds:mipmaps'] = '0'
+        nrmConv.compression = 'dxt5'
+        nrmConv.save(filename= targetPath + "/Textures/PluginData/" + planetName + "_NRM" + ".dds")
+        os.remove(targetPath + "/Textures/PluginData/" + planetName + "_NRM" + ".png")
 
-    #     clrConv = wImage.Image(filename= targetPath + "/Textures/PluginData/" + planetName + "_CLR" + ".png")
-    #     clrConv.options['dds:mipmaps'] = '0'
-    #     clrConv.compression = 'dxt5'
-    #     clrConv.save(filename= targetPath + "/Textures/PluginData/" + planetName + "_CLR" + ".dds")
-    #     os.remove(targetPath + "/Textures/PluginData/" + planetName + "_CLR" + ".png")
+        clrConv = wImage.Image(filename= targetPath + "/Textures/PluginData/" + planetName + "_CLR" + ".png")
+        clrConv.options['dds:mipmaps'] = '0'
+        clrConv.compression = 'dxt5'
+        clrConv.save(filename= targetPath + "/Textures/PluginData/" + planetName + "_CLR" + ".dds")
+        os.remove(targetPath + "/Textures/PluginData/" + planetName + "_CLR" + ".png")
 
-    #     if ocean == True:
-    #         vertClrConv = wImage.Image(filename= targetPath + "/Textures/PluginData/" + planetName + "_VERTCLR" + ".png")
-    #         vertClrConv.options['dds:mipmaps'] = '0'
-    #         vertClrConv.compression = 'dxt5'
-    #         vertClrConv.save(filename= targetPath + "/Textures/PluginData/" + planetName + "_VERTCLR" + ".dds")
-    #         os.remove(targetPath + "/Textures/PluginData/" + planetName + "_VERTCLR" + ".png")
+        if ocean == True:
+            vertClrConv = wImage.Image(filename= targetPath + "/Textures/PluginData/" + planetName + "_VERTCLR" + ".png")
+            vertClrConv.options['dds:mipmaps'] = '0'
+            vertClrConv.compression = 'dxt5'
+            vertClrConv.save(filename= targetPath + "/Textures/PluginData/" + planetName + "_VERTCLR" + ".dds")
+            os.remove(targetPath + "/Textures/PluginData/" + planetName + "_VERTCLR" + ".png")
 
-    #     texEndTime = time.time()
-    #     ddsEndTime = texEndTime-texStartTime
+        texEndTime = time.time()
+        ddsEndTime = texEndTime-texStartTime
 
-    #     print("Finished coverting maps to dds. Time elapsed: " + str(ddsEndTime) + " seconds.")
+        print("Finished coverting maps to dds. Time elapsed: " + str(ddsEndTime) + " seconds.")
 
-    #     print("Finished generating maps! Total time elapsed: " + str(noiseEndTime + nrmEndTime + clrEndTime + ddsEndTime) + " seconds.")
+        print("Finished generating maps! Total time elapsed: " + str(noiseEndTime + nrmEndTime + clrEndTime + ddsEndTime) + " seconds.")
         
-    # allActions.append([time.localtime(),"Generated maps for: " + planetName])
-    # state.allActionArrayUpdated = True
+    allActions.append([time.localtime(),"Generated maps for: " + planetName])
+    state.allActionArrayUpdated = True
 # Generates gas giant maps.
 def generateGasGiantMaps(seed, terrainR, terrainG, terrainB, planetName, allActions,targetPath, base_dir, canConvertToDDS):
     ggMapRNG = random.Random()
