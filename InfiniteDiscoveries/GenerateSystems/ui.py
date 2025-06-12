@@ -122,19 +122,52 @@ def openSettings():
 
         def apply_settings(self):
             # Save settings to file
-            settingsData[2] = "useMultithreading = " + str(self.use_multithread_var.get()) + " # Will use multithreading, this will drastically increase generator efficiency and thus result in faster generation, but may increase CPU usage." + "\n"
-            settingsData[6] = "convertTexturesToDDS = " + str(self.convert_dds_var.get()) + " # Will remove the requirement for ImageMagick and reduce generator time if false. Will also increase KSP loading time so setting to false is not recommended." + "\n"
-            settingsData[11] = "fantasyNames = " + str(self.fantasy_names_var.get()) + " # Generate a fantasy name for bodies. Will not affect internal names!" + "\n"
             try:
                 minPlanets = int(self.min_planets_var.get())
             except ValueError:
                 minPlanets = 0
-            settingsData[8] = "minPlanets = " + str(minPlanets) + " # Minimum number of planets per star." + "\n"
             try:
                 minMoons = int(self.min_moons_var.get())
             except ValueError:
                 minMoons = 0
-            settingsData[9] = "minMoons = " + str(minMoons) + " # Minimum number of moons per star." + "\n"
+
+            new_settings = {
+                "useMultithreading": (
+                    str(self.use_multithread_var.get()),
+                    "# Will use multithreading, this will drastically increase generator efficiency and thus result in faster generation, but may increase CPU usage."
+                ),
+                "convertTexturesToDDS": (
+                    str(self.convert_dds_var.get()),
+                    "# Will remove the requirement for ImageMagick and reduce generator time if false. Will also increase KSP loading time so setting to false is not recommended."
+                ),
+                "fantasyNames": (
+                    str(self.fantasy_names_var.get()),
+                    "# Generate a fantasy name for bodies. Will not affect internal names!"
+                ),
+                "minPlanets": (
+                    str(minPlanets),
+                    "# Minimum number of planets per star."
+                ),
+                "minMoons": (
+                    str(minMoons),
+                    "# Minimum number of moons per star."
+                )
+            }
+
+            updated_keys = set()
+
+            for i, line in enumerate(settingsData):
+                for key, (value, comment) in new_settings.items():
+                    if line.strip().startswith(key + " ="):
+                        settingsData[i] = f"{key} = {value} {comment}\n"
+                        updated_keys.add(key)
+                        break
+
+            # Append missing keys
+            for key, (value, comment) in new_settings.items():
+                if key not in updated_keys:
+                    settingsData.append(f"{key} = {value} {comment}\n")
+
             with open("Settings.py", "w") as settingsFile:
                 settingsFile.writelines(settingsData)
             print("Settings applied.")

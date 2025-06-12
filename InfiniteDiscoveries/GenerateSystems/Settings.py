@@ -2,16 +2,12 @@
 
 useMultithreading = True # Will use multithreading, this will drastically increase generator efficiency and thus result in faster generation, but may increase CPU usage.
 
-deleteUnnecessarFolders = False # (DEPRECATED, DOES NOTHING!!) Enabled on default, will delete the "GenerateSystem" folder once it's done. This is so that people stop complaining that their game won't start.
-
 convertTexturesToDDS = True # Will remove the requirement for ImageMagick and reduce generator time if false. Will also increase KSP loading time so setting to false is not recommended.
 
 minPlanets = 3 # Minimum number of planets per star.
 minMoons = 0 # Minimum number of moons per star.
 
 fantasyNames = True # Generate a fantasy name for bodies. Will not affect internal names!
-
-showConsole = True # Whether or not to show the console.
 
 # Star shenanigans, override if you want a specific type of star to spawn.
 
@@ -151,27 +147,3 @@ OTHER_W_BlueMin = 50
 OTHER_W_RedMax = 200
 OTHER_W_GreenMax = 200
 OTHER_W_BlueMax = 200
-
-print("Yup, no problems here.")
-print("---------------------------------------------------------------")
-#import colorsys
-#clrHSL = colorsys.rgb_to_hsv(0.5,1,0.5)
-#clrRGB = colorsys.hsv_to_rgb(clrHSL[0], (clrHSL[1]/2), clrHSL[2])
-#print(clrRGB)
-#print("babababba.lalalla".split("."))
-#print(len("52200"))
-#radius = 300000 / 1000
-#radiusDiv = 600 / radius
-#print(radiusDiv)
-#print(str((50/radiusDiv)/radiusDiv))
-#import random
-#def generastePieceOfShit(shid):
-#    fuckershithead = random.Random()
-#    fuckershithead.seed(random.randint(0,194935))
-#    bitchhead = fuckershithead.randint(0,1)
-#    print(bitchhead)
-#for i in range(100):
-#    shid = random.randint(0,1)
-#    generastePieceOfShit(shid)
-#import numpy as np
-#print(np.interp(1200, [700, 2000], [32, 255]))

@@ -68,3 +68,7 @@ This is a fork of the [original script](https://github.com/Sushutt/Infinite-Disc
 - Custom tkinter instead of the now paid pysimplegui
 - Fix several bugs in the original scripts (including solar panels not working)
 - Removed random unused assets (like a video of a thumbs up emoji, for whatever reason)
+
+## Issues/problems to be worked on
+- Duplicate names (not enought names, need better name gen)
+- Continue to clean up the super dirty code
