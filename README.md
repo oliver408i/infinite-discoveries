@@ -58,9 +58,9 @@ This is a fork of the [original script](https://github.com/Sushutt/Infinite-Disc
 - Now you can boot up KSP and play
 
 <details><summary>MagickWand Install</summary>
-`libmagickwand-dev` for APT on Debian/Ubuntu,
-`imagemagick` for MacPorts/Homebrew on Mac,
-`ImageMagick-devel` for Yum on CentOS
+<code>libmagickwand-dev</code> for APT on Debian/Ubuntu<br>
+<code>imagemagick</code> for MacPorts/Homebrew on Mac<br>
+<code>ImageMagick-devel</code> for Yum on CentOS
 </details>
 
 ## Improvements over the original
