@@ -64,6 +64,7 @@ function buildBodyTree(configs) {
             Tag,
             sunlightColor: values.sunlightColor || null,
             luminosity: values.luminosity ? parseFloat(values.luminosity) : null,
+            type: values.type || null,
             children: []
         };
 
@@ -169,7 +170,7 @@ async function initializeScene() {
             }
 
             const geometry = new THREE.SphereGeometry(body.radius * SCALE_FACTOR, widthSegments, heightSegments);
-            const isStar = body.Tag?.includes('Star');
+            const isStar = body.type === 'Star';
             const material = new THREE.MeshStandardMaterial({
                 color: 0xffffff,
                 transparent: isStar,
@@ -183,20 +184,46 @@ async function initializeScene() {
             mesh.userData = { name: body.name };
             scene.add(mesh);
 
-            const heightmapName = `${body.internalName}_HGT.dds`;
-            if (ddsPaths[heightmapName]) {
+            // Parse config values for texture/normal/heightmap file names
+            const cfg = planetConfigs.find(cfg => parseCfgValues(cfg.content).name === body.internalName);
+            let values = null;
+            if (cfg) {
+                values = parseCfgValues(cfg.content);
+            }
+            // Parse VertexHeightMap block for heightmap name
+            let heightmapName = null;
+            if (cfg && cfg.content.includes('VertexHeightMap')) {
+                const lines = cfg.content.split('\n').map(line => line.trim());
+                let insideBlock = false;
+                for (let line of lines) {
+                    if (line.startsWith('VertexHeightMap')) {
+                        insideBlock = true;
+                        continue;
+                    }
+                    if (insideBlock && line.startsWith('map')) {
+                        heightmapName = line.split('=')[1].trim().split('/').pop();
+                        break;
+                    }
+                    if (insideBlock && line === '}') break;
+                }
+            }
+            if (heightmapName && ddsPaths[heightmapName]) {
                 console.log(`Found heightmap for ${body.name}: ${heightmapName}`);
                 try {
                     const texture = await new Promise((resolve, reject) => {
                         ddsLoader.load(ddsPaths[heightmapName], resolve, undefined, reject);
                     });
-                    material.displacementMap = texture;
-                    texture.wrapS = THREE.RepeatWrapping;
-                    texture.wrapT = THREE.RepeatWrapping;
-                    material.displacementScale = body.radius < 1000000
-                        ? body.radius * SCALE_FACTOR * 0.05
-                        : body.radius * SCALE_FACTOR * 0.15;
-                    material.needsUpdate = true;
+                    if (texture && texture.image && texture.image.width && texture.image.height) {
+                        material.displacementMap = texture;
+                        texture.wrapS = THREE.RepeatWrapping;
+                        texture.wrapT = THREE.RepeatWrapping;
+                        material.displacementScale = body.radius < 1000000
+                            ? body.radius * SCALE_FACTOR * 0.05
+                            : body.radius * SCALE_FACTOR * 0.15;
+                        material.needsUpdate = true;
+                    } else {
+                        console.warn(`Displacement map for ${body.name} is invalid or incomplete`, texture);
+                    }
                 } catch (error) {
                     console.error(`Failed to load heightmap for ${body.name}:`, error);
                 }
@@ -204,17 +231,21 @@ async function initializeScene() {
                 console.log(`No heightmap found for ${body.name}`);
             }
 
-            const colormapName = `${body.internalName}_CLR.dds`;
+            const colormapName = values && values.texture ? values.texture.split('/').pop() : `${body.internalName}_CLR.dds`;
             if (ddsPaths[colormapName]) {
                 console.log(`Found color map for ${body.name}: ${colormapName}`);
                 try {
                     const colorTexture = await new Promise((resolve, reject) => {
                         ddsLoader.load(ddsPaths[colormapName], resolve, undefined, reject);
                     });
-                    material.map = colorTexture;
-                    colorTexture.wrapS = THREE.RepeatWrapping;
-                    colorTexture.wrapT = THREE.RepeatWrapping;
-                    material.needsUpdate = true;
+                    if (colorTexture && colorTexture.image && colorTexture.image.width && colorTexture.image.height) {
+                        material.map = colorTexture;
+                        colorTexture.wrapS = THREE.RepeatWrapping;
+                        colorTexture.wrapT = THREE.RepeatWrapping;
+                        material.needsUpdate = true;
+                    } else {
+                        console.warn(`Color map for ${body.name} is invalid or incomplete`, colorTexture);
+                    }
                 } catch (error) {
                     console.error(`Failed to load color map for ${body.name}:`, error);
                 }
@@ -223,19 +254,22 @@ async function initializeScene() {
             }
 
             // Load normal map if present (shader decode for DXT5_NM)
-            const normalmapName = `${body.internalName}_NRM.dds`;
+            const normalmapName = values && values.normals ? values.normals.split('/').pop() : `${body.internalName}_NRM.dds`;
             if (ddsPaths[normalmapName]) {
                 console.log(`Found normal map for ${body.name}: ${normalmapName}`);
                 try {
                     const rawTexture = await new Promise((resolve, reject) => {
                         ddsLoader.load(ddsPaths[normalmapName], resolve, undefined, reject);
                     });
-                    material.normalMap = rawTexture;
-                    material.normalScale = body.radius < 1000000
-                        ? new THREE.Vector2(1.5, 1.5)
-                        : new THREE.Vector2(1, 1);
-                    
-                    material.needsUpdate = true;
+                    if (rawTexture && rawTexture.image && rawTexture.image.width && rawTexture.image.height) {
+                        material.normalMap = rawTexture;
+                        material.normalScale = body.radius < 1000000
+                            ? new THREE.Vector2(1.5, 1.5)
+                            : new THREE.Vector2(1, 1);
+                        material.needsUpdate = true;
+                    } else {
+                        console.warn(`Normal map for ${body.name} is invalid or incomplete`, rawTexture);
+                    }
                 } catch (error) {
                     console.error(`Failed to load normal map for ${body.name}:`, error);
                 }
@@ -244,7 +278,7 @@ async function initializeScene() {
             }
 
             // Enhanced star rendering: halo, light, and emissive material for InfD_Star
-            if (body.Tag?.includes('Star')) {
+            if (isStar) {
                 console.log("Adding halo, light, and emissive texture for star:", body.internalName);
 
                 // Add emissive color dynamically based on sunlightColor if present
@@ -330,33 +364,25 @@ async function initializeScene() {
             mesh.add(label);
 
             // Add icon as CSS2DRenderer icon instead of sprite
-            const cfg = planetConfigs.find(cfg => parseCfgValues(cfg.content).name === body.internalName);
             if (!cfg) {
                 console.warn(`No matching config found for body: ${body.name} (${body.internalName})`);
             }
-            let values = null;
-            if (cfg) {
-                values = parseCfgValues(cfg.content);
-                if (!values) {
-                    console.warn(`Failed to parse config for body: ${body.name} (${body.internalName})`);
-                }
-                if (values && values.iconTexture) {
-                    const iconFileName = values.iconTexture.split('/').pop();
-                    const iconUrl = iconPaths[iconFileName];
-                    if (iconUrl) {
-                        const iconDiv = document.createElement('img');
-                        iconDiv.src = iconUrl;
-                        iconDiv.style.width = '20px';
-                        iconDiv.style.height = '20px';
-                        iconDiv.style.pointerEvents = 'none';
-                        iconDiv.style.marginBottom = '1em';
-                        const iconLabel = new CSS2DObject(iconDiv);
-                        const iconYOffset = body.radius * SCALE_FACTOR * 0.9 + 0.15;
-                        iconLabel.position.set(0, iconYOffset, 0);
-                        mesh.add(iconLabel);
-                    } else {
-                        console.warn(`Icon file not found for body: ${body.name}, icon: ${iconFileName}`);
-                    }
+            if (values && values.iconTexture) {
+                const iconFileName = values.iconTexture.split('/').pop();
+                const iconUrl = iconPaths[iconFileName];
+                if (iconUrl) {
+                    const iconDiv = document.createElement('img');
+                    iconDiv.src = iconUrl;
+                    iconDiv.style.width = '20px';
+                    iconDiv.style.height = '20px';
+                    iconDiv.style.pointerEvents = 'none';
+                    iconDiv.style.marginBottom = '1em';
+                    const iconLabel = new CSS2DObject(iconDiv);
+                    const iconYOffset = body.radius * SCALE_FACTOR * 0.9 + 0.15;
+                    iconLabel.position.set(0, iconYOffset, 0);
+                    mesh.add(iconLabel);
+                } else {
+                    console.warn(`Icon file not found for body: ${body.name}, icon: ${iconFileName}`);
                 }
             }
 
@@ -388,17 +414,15 @@ async function initializeScene() {
                         depthWrite: false
                     });
                     const ringMesh = new THREE.Mesh(ringGeometry, ringMaterial);
-                    // --- Begin new inclination and node rotation logic ---
-                    // const inclinationRad = THREE.MathUtils.degToRad(body.inclination || 0);
-                    // const nodeRad = THREE.MathUtils.degToRad(parseFloat(values?.longitudeOfAscendingNode || 0));
+                    const inclinationRad = THREE.MathUtils.degToRad(body.inclination || 0);
+                    const nodeRad = THREE.MathUtils.degToRad(parseFloat(values?.longitudeOfAscendingNode || 0));
 
-                    // ringMesh.rotation.set(0, 0, 0);
-                    // ringMesh.rotation.order = 'ZYX';
-                    // ringMesh.rotateZ(nodeRad);
-                    // ringMesh.rotateX(inclinationRad);
-                    // // --- End new logic ---
+                    ringMesh.rotation.set(0, 0, 0);
+                    ringMesh.rotation.order = 'ZYX';
+                    ringMesh.rotateZ(nodeRad);
+                    ringMesh.rotateX(inclinationRad);
                     ringMesh.position.copy(position);
-                    scene.add(ringMesh);
+                    //scene.add(ringMesh); // TODO: Fix rings
                     console.log(`Added ring for body: ${body.name} with radius: ${inner} to ${outer} (sphere radius ${planetRadius})`);
                 }
             }
