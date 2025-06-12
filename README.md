@@ -3,9 +3,9 @@ Infinite Discoveries is a randomized star system generator for KSP, so you never
 This is a fork of the [original script](https://github.com/Sushutt/Infinite-Discoveries) that improves on a number of things (see below).
 
 **Sample Planets**  
-![image](https://github.com/user-attachments/assets/e36f1e61-c25a-461a-adfb-31f2aa451931)
-![image](https://github.com/user-attachments/assets/d8fe08a3-3cb1-4600-a1b9-eff52378356d)
-![image](https://github.com/user-attachments/assets/f56d6b42-bf0e-4afc-8781-46870b1cdf46)
+<img src="https://github.com/user-attachments/assets/e36f1e61-c25a-461a-adfb-31f2aa451931" width="400"/>
+<img src="https://github.com/user-attachments/assets/d8fe08a3-3cb1-4600-a1b9-eff52378356d" width="300"/>
+<img src="https://github.com/user-attachments/assets/f56d6b42-bf0e-4afc-8781-46870b1cdf46" width="250"/>
 
 
 ## Features
