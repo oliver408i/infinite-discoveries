@@ -1,9 +1,10 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+import { DDSLoader } from 'three/addons/loaders/DDSLoader.js';
 
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.01, 10000 );
+const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.001, 10000 );
 
 const SCALE_FACTOR = 0.00000001;
 
@@ -17,7 +18,7 @@ labelRenderer.domElement.style.top = '0px';
 labelRenderer.domElement.style.pointerEvents = 'none';
 
 const controls = new OrbitControls( camera, renderer.domElement );
-
+const ddsLoader = new DDSLoader();
 
 camera.position.z = 5;
 
@@ -28,8 +29,9 @@ function parseCfgValues(text) {
         line = line.trim();
         if (line.startsWith('//') || !line.includes('=')) continue;
         const [key, value] = line.split('=').map(s => s.trim());
-        if (!(key in result))
-        result[key] = value;
+        if (!(key in result)) {
+            result[key] = value;
+        }
     }
     return result;
 }
@@ -41,12 +43,14 @@ function buildBodyTree(configs) {
     for (const cfg of configs) {
         const values = parseCfgValues(cfg.content);
         const internalName = values.name;
-        const displayName = values.displayName || internalName;
+        // Remove ^N from displayName and internalName for displayName
+        const displayName = (values.displayName || internalName).replace(/\^N/g, '');
         const referenceBody = values.referenceBody || 'Sun';
         const radius = parseFloat(values.radius || '1000');
         const semiMajorAxis = parseFloat(values.semiMajorAxis || '0');
         const eccentricity = parseFloat(values.eccentricity || '0');
         const inclination = parseFloat(values.inclination || '0');
+        const Tag = values.Tag
 
         bodies[internalName] = {
             name: displayName,
@@ -57,6 +61,9 @@ function buildBodyTree(configs) {
             semiMajorAxis,
             eccentricity,
             inclination,
+            Tag,
+            sunlightColor: values.sunlightColor || null,
+            luminosity: values.luminosity ? parseFloat(values.luminosity) : null,
             children: []
         };
 
@@ -91,11 +98,13 @@ function createOrbitLine(semiMajorAxis, eccentricity = 0, inclination = 0) {
     return new THREE.LineLoop(geometry, material);
 }
 
-document.getElementById('load-button').addEventListener('click', async () => {
-    const { planetConfigs, iconPaths } = await loadCfgFilesRecursively();
+// Move main loading logic into a new async function
+async function initializeScene() {
+    const { planetConfigs, iconPaths, ddsPaths } = await loadCfgFilesRecursively();
     console.log('Loaded CFG files:', planetConfigs);
     console.log(`Total configs loaded: ${planetConfigs.length}`);
-    document.getElementById('load-button').remove()
+    const loadBtn = document.getElementById('load-button');
+    if (loadBtn) loadBtn.remove();
 
     const system = buildBodyTree(planetConfigs);
     console.log('System tree rooted at Sun:', system);
@@ -112,7 +121,7 @@ document.getElementById('load-button').addEventListener('click', async () => {
 
     let displayedBodyCount = 0;
 
-    function addBodiesToScene(bodies, parentPosition = new THREE.Vector3(0, 0, 0), visited = new Set(), textureBasePathMap) {
+    async function addBodiesToScene(bodies, parentPosition = new THREE.Vector3(0, 0, 0), visited = new Set(), textureBasePathMap) {
         const orbitSpacing = 0.05;
 
         for (const body of bodies) {
@@ -121,7 +130,16 @@ document.getElementById('load-button').addEventListener('click', async () => {
                 continue; // Prevent cycles
             }
             visited.add(body.internalName);
-            console.log(`Placing body: ${body.name}, semiMajorAxis: ${body.semiMajorAxis}, radius: ${body.radius}`);
+            // Skip sphere creation for barycenter
+            if (body.Tag === 'InfD_Barycenter') {
+                console.log(`Skipping sphere creation for barycenter: ${body.name}`);
+                if (body.children.length > 0) {
+                    console.log(`Adding children of barycenter ${body.name}: ${body.children.map(c => c.name).join(', ')}`);
+                    await addBodiesToScene(body.children, parentPosition, visited, textureBasePathMap);
+                }
+                continue;
+            }
+            console.log(`Placing body: ${body.name}, semiMajorAxis: ${body.semiMajorAxis}, radius: ${body.radius}`, body);
 
             const angle = Math.random() * Math.PI * 2;
             const distance = body.semiMajorAxis * SCALE_FACTOR + orbitSpacing;
@@ -136,12 +154,146 @@ document.getElementById('load-button').addEventListener('click', async () => {
             ).applyMatrix4(orbitRotation);
             const position = parentPosition.clone().add(pos);
 
-            const geometry = new THREE.SphereGeometry(body.radius * SCALE_FACTOR, 16, 16);
-            const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            // Dynamically determine geometry resolution based on eccentricity and radius
+            let widthSegments = 16;
+            let heightSegments = 16;
+
+            if (body.eccentricity < 0.01) {
+                widthSegments = 32;
+                heightSegments = 32;
+            }
+
+            if (body.radius < 1000000) {
+                widthSegments = Math.max(widthSegments, 64);
+                heightSegments = Math.max(heightSegments, 64);
+            }
+
+            const geometry = new THREE.SphereGeometry(body.radius * SCALE_FACTOR, widthSegments, heightSegments);
+            const isStar = body.Tag?.includes('Star');
+            const material = new THREE.MeshStandardMaterial({
+                color: 0xffffff,
+                transparent: isStar,
+                opacity: isStar ? 0.2 : 1.0,
+                depthWrite: !isStar,
+                emissive: isStar ? new THREE.Color(0, 0, 0) : new THREE.Color(0, 0, 0),
+                emissiveIntensity: isStar ? 1.5 : 0
+            });
             const mesh = new THREE.Mesh(geometry, material);
             mesh.position.copy(position);
             mesh.userData = { name: body.name };
             scene.add(mesh);
+
+            const heightmapName = `${body.internalName}_HGT.dds`;
+            if (ddsPaths[heightmapName]) {
+                console.log(`Found heightmap for ${body.name}: ${heightmapName}`);
+                try {
+                    const texture = await new Promise((resolve, reject) => {
+                        ddsLoader.load(ddsPaths[heightmapName], resolve, undefined, reject);
+                    });
+                    material.displacementMap = texture;
+                    texture.wrapS = THREE.RepeatWrapping;
+                    texture.wrapT = THREE.RepeatWrapping;
+                    material.displacementScale = body.radius < 1000000
+                        ? body.radius * SCALE_FACTOR * 0.05
+                        : body.radius * SCALE_FACTOR * 0.15;
+                    material.needsUpdate = true;
+                } catch (error) {
+                    console.error(`Failed to load heightmap for ${body.name}:`, error);
+                }
+            } else {
+                console.log(`No heightmap found for ${body.name}`);
+            }
+
+            const colormapName = `${body.internalName}_CLR.dds`;
+            if (ddsPaths[colormapName]) {
+                console.log(`Found color map for ${body.name}: ${colormapName}`);
+                try {
+                    const colorTexture = await new Promise((resolve, reject) => {
+                        ddsLoader.load(ddsPaths[colormapName], resolve, undefined, reject);
+                    });
+                    material.map = colorTexture;
+                    colorTexture.wrapS = THREE.RepeatWrapping;
+                    colorTexture.wrapT = THREE.RepeatWrapping;
+                    material.needsUpdate = true;
+                } catch (error) {
+                    console.error(`Failed to load color map for ${body.name}:`, error);
+                }
+            } else {
+                console.log(`No color map found for ${body.name}`);
+            }
+
+            // Load normal map if present (shader decode for DXT5_NM)
+            const normalmapName = `${body.internalName}_NRM.dds`;
+            if (ddsPaths[normalmapName]) {
+                console.log(`Found normal map for ${body.name}: ${normalmapName}`);
+                try {
+                    const rawTexture = await new Promise((resolve, reject) => {
+                        ddsLoader.load(ddsPaths[normalmapName], resolve, undefined, reject);
+                    });
+                    material.normalMap = rawTexture;
+                    material.normalScale = body.radius < 1000000
+                        ? new THREE.Vector2(1.5, 1.5)
+                        : new THREE.Vector2(1, 1);
+                    
+                    material.needsUpdate = true;
+                } catch (error) {
+                    console.error(`Failed to load normal map for ${body.name}:`, error);
+                }
+            } else {
+                console.log(`No normal map found for ${body.name}`);
+            }
+
+            // Enhanced star rendering: halo, light, and emissive material for InfD_Star
+            if (body.Tag?.includes('Star')) {
+                console.log("Adding halo, light, and emissive texture for star:", body.internalName);
+
+                // Add emissive color dynamically based on sunlightColor if present
+                let emissiveColor = new THREE.Color(1, 1, 1);
+                if (body.sunlightColor) {
+                    const parts = body.sunlightColor.split(',').slice(0, 3).map(Number);
+                    if (parts.length === 3) {
+                        emissiveColor = new THREE.Color(parts[0], parts[1], parts[2]);
+                    }
+                }
+                material.emissive = emissiveColor;
+                material.emissiveIntensity = 5;
+                material.needsUpdate = true;
+
+                // Add halo mesh
+                const haloGeometry = new THREE.SphereGeometry(body.radius * SCALE_FACTOR * 1.1, 50, 50);
+                const haloMaterial = new THREE.ShaderMaterial({
+                    uniforms: {
+                        HINTENSITY: { value: body.luminosity ? Math.sqrt(body.luminosity) * 0.01 : 1.0 }
+                    },
+                    vertexShader: `varying vec3 vertexNormal;
+                        void main() {
+                            vertexNormal = normal;
+                            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                        }`,
+                    fragmentShader: `uniform float HINTENSITY;
+                        varying vec3 vertexNormal;
+                        void main() {
+                            float intensity = pow(0.9 - dot(vertexNormal, vec3(0, 0, 1.0)), 2.0) * HINTENSITY;
+                            gl_FragColor = vec4(0.8, 1.0, 0.6, 0.2) * intensity;
+                        }`,
+                    blending: THREE.AdditiveBlending,
+                    side: THREE.BackSide,
+                    transparent: true,
+                    depthWrite: false
+                });
+                const halo = new THREE.Mesh(haloGeometry, haloMaterial);
+                halo.position.copy(position);
+                scene.add(halo);
+
+                // Add sunlight PointLight
+                let intensity = 10;
+                if (body.luminosity !== null && !isNaN(body.luminosity)) {
+                    intensity = body.luminosity / 10;
+                }
+                const light = new THREE.PointLight(emissiveColor, intensity, 5000, 1);
+                light.position.copy(position);
+                scene.add(light);
+            }
 
             displayedBodyCount++;
 
@@ -155,7 +307,8 @@ document.getElementById('load-button').addEventListener('click', async () => {
 
             const labelDiv = document.createElement('div');
             labelDiv.className = 'label';
-            labelDiv.textContent = body.name;
+            // Show both displayName and internalName
+            labelDiv.innerHTML = `<div style="font-weight: bold;">${body.name}</div><div style="font-size: 10px; opacity: 0.7;">${body.internalName}</div>`;
             labelDiv.style.marginTop = '-1em';
             labelDiv.style.color = 'white';
             labelDiv.style.fontSize = '12px';
@@ -172,7 +325,8 @@ document.getElementById('load-button').addEventListener('click', async () => {
             });
 
             const label = new CSS2DObject(labelDiv);
-            label.position.set(0, body.radius * SCALE_FACTOR * 1.5 + 0.1, 0);
+            const labelYOffset = body.radius * SCALE_FACTOR * 0.8 + 0.05;
+            label.position.set(0, labelYOffset, 0);
             mesh.add(label);
 
             // Add icon as CSS2DRenderer icon instead of sprite
@@ -180,8 +334,9 @@ document.getElementById('load-button').addEventListener('click', async () => {
             if (!cfg) {
                 console.warn(`No matching config found for body: ${body.name} (${body.internalName})`);
             }
+            let values = null;
             if (cfg) {
-                const values = parseCfgValues(cfg.content);
+                values = parseCfgValues(cfg.content);
                 if (!values) {
                     console.warn(`Failed to parse config for body: ${body.name} (${body.internalName})`);
                 }
@@ -196,7 +351,8 @@ document.getElementById('load-button').addEventListener('click', async () => {
                         iconDiv.style.pointerEvents = 'none';
                         iconDiv.style.marginBottom = '1em';
                         const iconLabel = new CSS2DObject(iconDiv);
-                        iconLabel.position.set(0, body.radius * SCALE_FACTOR * 1.5 + 0.25, 0);
+                        const iconYOffset = body.radius * SCALE_FACTOR * 0.9 + 0.15;
+                        iconLabel.position.set(0, iconYOffset, 0);
                         mesh.add(iconLabel);
                     } else {
                         console.warn(`Icon file not found for body: ${body.name}, icon: ${iconFileName}`);
@@ -204,17 +360,63 @@ document.getElementById('load-button').addEventListener('click', async () => {
                 }
             }
 
+            // Add ring if specified (key-based scan, no regex)
+            if (values && cfg && cfg.content.includes('Rings')) {
+                const lines = cfg.content.split('\n').map(line => line.trim());
+                let innerRadius, outerRadius, ringColor, ringTexture;
+                for (let line of lines) {
+                    if (line.startsWith('innerRadius')) innerRadius = parseFloat(line.split('=')[1].trim());
+                    if (line.startsWith('outerRadius')) outerRadius = parseFloat(line.split('=')[1].trim());
+                    if (line.startsWith('color')) ringColor = line.split('=')[1].trim().split(',').slice(0, 3).map(parseFloat);
+                    if (line.startsWith('texture')) ringTexture = line.split('=')[1].trim().split('/').pop();
+                }
+
+                if (innerRadius && outerRadius && ringTexture) {
+                    // Calculate ring distances from the surface of the planet sphere
+                    const planetRadius = body.radius * SCALE_FACTOR;
+                    const inner = planetRadius + (innerRadius * SCALE_FACTOR);
+                    const outer = planetRadius + (outerRadius * SCALE_FACTOR);
+                    // const textureUrl = iconPaths[ringTexture]; // Not needed for debug version
+
+                    const ringGeometry = new THREE.RingGeometry(inner, outer, 128);
+                    // Debug: solid magenta, no texture, semi-transparent
+                    const ringMaterial = new THREE.MeshBasicMaterial({
+                        color: 0xff00ff, // bright magenta for debugging visibility
+                        side: THREE.DoubleSide,
+                        transparent: true,
+                        opacity: 0.6,
+                        depthWrite: false
+                    });
+                    const ringMesh = new THREE.Mesh(ringGeometry, ringMaterial);
+                    // --- Begin new inclination and node rotation logic ---
+                    // const inclinationRad = THREE.MathUtils.degToRad(body.inclination || 0);
+                    // const nodeRad = THREE.MathUtils.degToRad(parseFloat(values?.longitudeOfAscendingNode || 0));
+
+                    // ringMesh.rotation.set(0, 0, 0);
+                    // ringMesh.rotation.order = 'ZYX';
+                    // ringMesh.rotateZ(nodeRad);
+                    // ringMesh.rotateX(inclinationRad);
+                    // // --- End new logic ---
+                    ringMesh.position.copy(position);
+                    scene.add(ringMesh);
+                    console.log(`Added ring for body: ${body.name} with radius: ${inner} to ${outer} (sphere radius ${planetRadius})`);
+                }
+            }
+
             if (body.children.length > 0) {
                 console.log(`Adding children of ${body.name}: ${body.children.map(c => c.name).join(', ')}`);
-                addBodiesToScene(body.children, position, visited, textureBasePathMap);
+                await addBodiesToScene(body.children, position, visited, textureBasePathMap);
             } else {
                 console.log(`Body ${body.name} has no children.`);
             }
         }
     }
 
-    addBodiesToScene(system, new THREE.Vector3(0, 0, 0), new Set(), textureBasePathMap);
+    await addBodiesToScene(system, new THREE.Vector3(0, 0, 0), new Set(), textureBasePathMap);
     console.log(`Displayed total bodies: ${displayedBodyCount}`);
+
+    //const light = new THREE.HemisphereLight()
+    //scene.add(light)
 
     window.addEventListener('keydown', (e) => {
         if (e.key === 'Tab') {
@@ -229,12 +431,12 @@ document.getElementById('load-button').addEventListener('click', async () => {
             controls.target.copy(target);
         }
     });
+
     document.body.appendChild( renderer.domElement );
     document.body.appendChild(labelRenderer.domElement);
 
-
     animate();
-})
+}
 
 function animate() {
     requestAnimationFrame( animate );
@@ -243,10 +445,16 @@ function animate() {
     labelRenderer.render(scene, camera);
 }
 
-// Recursively load all .cfg files and image files from a user-selected directory
+// Recursively load all .cfg files and image files from a user-selected directory,
+// or from a hardcoded directory for development.
 async function loadCfgFilesRecursively() {
+    // DEV MODE: Toggle and path for hardcoded directory loading
+    const USE_HARDCODED_PATH = false; // This currently doesn't work for now
+    const HARDCODED_PATH = null;
+
     const planetConfigs = [];
     const iconPaths = {};
+    const ddsPaths = {};
 
     async function readDirectory(dirHandle) {
         for await (const entry of dirHandle.values()) {
@@ -262,6 +470,10 @@ async function loadCfgFilesRecursively() {
                     const file = await entry.getFile();
                     iconPaths[entry.name] = URL.createObjectURL(file);
                 }
+                if (entry.name.toLowerCase().endsWith('.dds')) {
+                    const file = await entry.getFile();
+                    ddsPaths[entry.name] = URL.createObjectURL(file);
+                }
             } else if (entry.kind === 'directory') {
                 await readDirectory(entry);
             }
@@ -269,12 +481,40 @@ async function loadCfgFilesRecursively() {
     }
 
     try {
-        const dirHandle = await window.showDirectoryPicker();
-        await readDirectory(dirHandle);
+        if (USE_HARDCODED_PATH) {
+            // Attempt to get the hardcoded directory (only works if supported by environment)
+            let dirHandle = null;
+            if (navigator.storage && typeof navigator.storage.getDirectory === 'function') {
+                try {
+                    dirHandle = await navigator.storage.getDirectory(HARDCODED_PATH);
+                } catch (e) {
+                    dirHandle = null;
+                }
+            }
+            if (!dirHandle) {
+                console.warn('Hardcoded directory not available, falling back to picker.');
+                const pickerHandle = await window.showDirectoryPicker();
+                await readDirectory(pickerHandle);
+            } else {
+                await readDirectory(dirHandle);
+            }
+        } else {
+            const dirHandle = await window.showDirectoryPicker();
+            await readDirectory(dirHandle);
+        }
         console.log('Loaded CFG files:', planetConfigs);
-        return { planetConfigs, iconPaths };
+        return { planetConfigs, iconPaths, ddsPaths };
     } catch (err) {
         console.error('Error reading directory:', err);
-        return { planetConfigs: [], iconPaths: {} };
+        return { planetConfigs: [], iconPaths: {}, ddsPaths: {} };
     }
+}
+
+// Automatically invoke the loading logic if USE_HARDCODED_PATH is enabled.
+const USE_HARDCODED_PATH = false; // Match with the earlier flag
+
+if (USE_HARDCODED_PATH) {
+    initializeScene();
+} else {
+    document.getElementById('load-button').addEventListener('click', initializeScene);
 }
