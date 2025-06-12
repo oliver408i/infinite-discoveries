@@ -279,18 +279,18 @@ def generateMoon(planetSeed, moonNum, parentPlanet, moonsGenerated, parentRadius
     if Settings.fantasyNames == True:
         if atmo == "Atmospheric":
             if finalTemp > 600:
-                dispName = processName(moonSeed,lavaTransisionTable,10)
+                dispName = processName(moonSeed, lavaTransisionTable)
             elif finalTemp < 100:
-                dispName = processName(moonSeed,icyTransisionTable,10)
+                dispName = processName(moonSeed, icyTransisionTable)
             elif ocean == True:
                 if not life == None:
-                    dispName = processName(moonSeed,lifeTransisionTable,10)
+                    dispName = processName(moonSeed, lifeTransisionTable)
                 else:
-                    dispName = processName(moonSeed,oceanicTransisionTable,10)
+                    dispName = processName(moonSeed, oceanicTransisionTable)
             else:
-                dispName = processName(moonSeed,rockyTransisionTable,10)
+                dispName = processName(moonSeed, rockyTransisionTable)
         else:
-            dispName = processName(moonSeed,vacuumTransisionTable,10)
+            dispName = processName(moonSeed, vacuumTransisionTable)
     else:
         dispName = planetName
 
@@ -731,20 +731,20 @@ def generate(seedThing,starN,starRadius,starMass,starColor,atmoCfg,listCfg,color
     if Settings.fantasyNames == True:
         if atmo == "Atmospheric":
             if finalTemp > 600:
-                dispName = processName(planetSeed,lavaTransisionTable,10)
+                dispName = processName(planetSeed,lavaTransisionTable)
             elif finalTemp < 100:
-                dispName = processName(planetSeed,icyTransisionTable,10)
+                dispName = processName(planetSeed,icyTransisionTable)
             elif ocean == True:
                 if not life == None:
-                    dispName = processName(planetSeed,lifeTransisionTable,10)
+                    dispName = processName(planetSeed,lifeTransisionTable)
                 else:
-                    dispName = processName(planetSeed,oceanicTransisionTable,10)
+                    dispName = processName(planetSeed,oceanicTransisionTable)
             elif gasGiant == True:
-                dispName = processName(planetSeed,gaseousTransisionTable,10)
+                dispName = processName(planetSeed,gaseousTransisionTable)
             else:
-                dispName = processName(planetSeed,rockyTransisionTable,10)
+                dispName = processName(planetSeed,rockyTransisionTable)
         else:
-            dispName = processName(planetSeed,vacuumTransisionTable,10)
+            dispName = processName(planetSeed,vacuumTransisionTable)
     else:
         dispName = planetName
 
@@ -1328,7 +1328,7 @@ def generateStar(starSeed, AmountOfPlanetsToGenerate, systemName, targetFilepath
         starDist = binarySMA
         starDistG = binarySMA
 
-    dispName = processName(starSeed, starTransisionTable, 10)
+    dispName = processName(starSeed, starTransisionTable)
 
     #if parentBarycenter == None:
     print("Number of planets for " + dispName + "(" + starName + "): " + str(int(planetsNum)))

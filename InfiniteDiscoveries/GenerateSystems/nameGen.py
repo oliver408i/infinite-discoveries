@@ -1,73 +1,66 @@
+SYLLABLE_SETS = {
+    "star": {
+        "prefixes": ["Xe", "Ka", "Ael", "Sol", "Zy", "Ast", "Or", "Alt", "Pol", "Ser"],
+        "middles": ["dra", "mir", "ven", "lux", "quas", "ion", "zer", "eth", "theo", "spir"],
+        "suffixes": ["os", "ar", "ion", "eus", "or", "ix", "el", "en", "arx", "orix"]
+    },
+    "vacuum": {
+        "prefixes": ["Ter", "No", "Bas", "Vac", "Lun", "Sil", "Nul", "Um", "Erg"],
+        "middles": ["ron", "crat", "form", "tect", "dran", "void", "grav", "null", "clus"],
+        "suffixes": ["on", "ar", "um", "ex", "an", "or", "us", "in", "yx", "arx"]
+    },
+    "oceanic": {
+        "prefixes": ["Aqua", "Hydr", "Mar", "Nept", "Cor", "Pel", "Del", "Sur", "Thal"],
+        "middles": ["al", "ith", "una", "ser", "ae", "ora", "thal", "und", "benth"],
+        "suffixes": ["on", "ia", "us", "ae", "is", "or", "isle", "in", "mar", "en"]
+    },
+    "gaseous": {
+        "prefixes": ["Atm", "Vap", "Strat", "Cumu", "Neb", "Gas", "Aero", "Clou", "Mist"],
+        "middles": ["eth", "oz", "meth", "heli", "nit", "trop", "fog", "vap", "haze"],
+        "suffixes": ["os", "ion", "ar", "us", "ix", "en", "ox", "an", "or", "ume"]
+    },
+    "life": {
+        "prefixes": ["Bio", "Eco", "Gen", "Viv", "Sym", "Phy", "Neo", "Zo", "Thri"],
+        "middles": ["syn", "eth", "flora", "phy", "vita", "gene", "ess", "trop", "nour"],
+        "suffixes": ["ia", "os", "on", "is", "um", "or", "ix", "ae", "ine", "el"]
+    },
+    "rocky": {
+        "prefixes": ["Roc", "Vol", "Bas", "Strat", "Mon", "Gran", "Ter", "Pet", "Lith"],
+        "middles": ["gran", "obs", "dur", "tect", "sil", "mol", "strat", "crust", "igne"],
+        "suffixes": ["ar", "os", "ek", "um", "an", "or", "en", "el", "ine", "ex"]
+    },
+    "lava": {
+        "prefixes": ["Mag", "Ig", "Lava", "Pyr", "Scor", "Ash", "Cind", "Volc", "Fum"],
+        "middles": ["mol", "visc", "flow", "vent", "cald", "scor", "eject", "igne", "torr"],
+        "suffixes": ["os", "ar", "um", "ix", "ae", "en", "is", "or", "ul", "oth"]
+    },
+    "icy": {
+        "prefixes": ["Cryo", "Glac", "Fro", "Sub", "Hail", "Snow", "Gel", "Win", "Brim"],
+        "middles": ["zen", "glim", "froz", "snow", "crys", "ice", "hoar", "shiv", "frim"],
+        "suffixes": ["is", "ar", "um", "en", "ix", "el", "or", "an", "ice", "id"]
+    }
+}
 import random
 
-def build_transition_table(tokens):
-        transition_table = {}
-        for i in range(len(tokens) - 1):
-            current_char = tokens[i]
-            next_char = tokens[i + 1]
-            if current_char not in transition_table:
-                transition_table[current_char] = []
-            transition_table[current_char].append(next_char)
-        return transition_table
-
-starNameCorpus = "Sun Galaxy Nebula Constellation Supernova Comet Meteor Astronomy Celestial Stellar Twinkle Cosmic Interstellar Astronomer Black Gravity Solar Space Meteorite Nebular Satellite Planetarium Radiant Hubble Luminous"
-starNameTokens = list(starNameCorpus)
-starTransisionTable = build_transition_table(starNameTokens)
-
-vacuumNameCorpus = "Earth Mercury Venus Mars Terrestrial Rocky Crust Mantle Core Atmosphere Geology Tectonics Volcanism Erosion Plateaus Mountains Canyons Valleys Deserts Plains"
-vacuumNameTokens = list(vacuumNameCorpus)
-vacuumTransisionTable = build_transition_table(vacuumNameTokens)
-
-oceanicNameCorpus = "Abyssal Tidal Submersible Aquatic Hydrothermal Coral Mariner Nautical Seafloor Plankton Tsunami Neptune Voyager Liquid Maritime Seafaring Atlantis Marine Abyss Voyager"
-oceanicNameTokens = list(oceanicNameCorpus)
-oceanicTransisionTable = build_transition_table(oceanicNameTokens)
-
-gaseousNameCorpus = "Cumulus Stratosphere Vapor Cirrus Nebula Condensation Haze Atmosphere Evaporation Methane Ozone Aerosol Fog Ammonia Carbon Dioxide Nitrogen Helium Vaporization Fogbank"
-gaseousNameTokens = list(gaseousNameCorpus)
-gaseousTransisionTable = build_transition_table(gaseousNameTokens)
-
-lifeNameCorpus = "Organism Evolution Biology Planet Respiration Reproduction Diversity Ecosystem Genetics Metabolism Microbes Adaptation Ecology Species Sustainability Biotechnology Biodiversity Survival Physiology Genetics"
-lifeNameTokens = list(lifeNameCorpus)
-lifeTransisionTable = build_transition_table(lifeNameTokens)
-
-rockyNameCorpus = "Barren Desolate Airless Vacant Lifeless Sterile Vacuum Harsh Inhospitable Rocky Surface Barren Wasteland No Atmosphere Rugged Desolation Uninhabitable"
-rockyNameTokens = list(rockyNameCorpus)
-rockyTransisionTable = build_transition_table(rockyNameTokens)
-
-lavaNameCorpus = "Magma Molten Flowing Volcanic Eruption Lava Lake Pyroclastic Viscosity Hot Molten Rock Igneous Crater Obsidian Glowing Vents Geological Ejecta Eruption Incandescent Lava Tube Pahoehoe Scoria"
-lavaNameTokens = list(lavaNameCorpus)
-lavaTransisionTable = build_transition_table(lavaNameTokens)
-
-icyNameCorpus = "Cryosphere Glacial Permafrost Frozen Tundra Ice Cap Frigid Glaciology Polar Icicle Frosty Snowy Frozen Wasteland Cryovolcano Hailstorm Blizzard Hibernation Subzero Crystalline Icy Surface Icebergs"
-icyNameTokens = list(icyNameCorpus)
-icyTransisionTable = build_transition_table(icyNameTokens)
-
 def getTables():
-    return starTransisionTable,vacuumTransisionTable,oceanicTransisionTable,gaseousTransisionTable,lifeTransisionTable,rockyTransisionTable,lavaTransisionTable,icyTransisionTable
+    return ["star", "vacuum", "oceanic", "gaseous", "life", "rocky", "lava", "icy"]
 
-# Step 4: Generate words
-def generateName2(transition_table, word_length, seed):
-    nameRNG = random.Random()
-    nameRNG.seed(seed)
-    current_char = ' '  # Start with a space character
-    word = ""
-    for _ in range(word_length):
-        if current_char in transition_table:
-            next_char = nameRNG.choice(transition_table[current_char])
-            word += next_char
-            current_char = next_char
-        else:
-            break
-    return word
+# Syllable-based name generator for planet types
+def generate_syllable_name_for_type(planet_type, seed=None, syllables=3):
+    rng = random.Random(seed)
+    if planet_type not in SYLLABLE_SETS:
+        planet_type = "star"  # fallback
+    parts = SYLLABLE_SETS[planet_type]
+    name_parts = [rng.choice(parts["prefixes"])]
+    if syllables >= 3:
+        name_parts.append(rng.choice(parts["middles"]))
+    name_parts.append(rng.choice(parts["suffixes"]))
+    return "".join(name_parts)
 
-# Process a name
-def processName(seed,tTable,length):
-    generated_word = generateName2(tTable, length, seed)
-    generatedWords = generated_word.split(" ")
-    max_len = -1
-    for ele in generatedWords:
-        if len(ele) > max_len:
-            max_len = len(ele)
-            res = ele
-    finalword = res
-    return finalword
+# Process a name (generates a name based on seed and category)
+def processName(seed, category): # Length is ignored for now
+    return generate_syllable_name_for_type(category) # Not using seed to encourage different names
+
+# Use this function in place of processName() if you want syllable-based names
+def generateNameByCategory(category, seed, syllables=3):
+    return generate_syllable_name_for_type(category, seed, syllables)
