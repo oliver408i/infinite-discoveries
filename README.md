@@ -45,6 +45,7 @@ This is a fork of the [original script](https://github.com/Sushutt/Infinite-Disc
 - EVE & Scatterer (optional visuals)
 - Parallax (optional ground scatters)
 ### Running
+- Download the code (you only need the `InfiniteDiscoveries` folder)
 - Navigate to the `GenerateSystems` directory
 - Do `pip install -r requirements.txt`. Use a venv if needed, and make sure you use the right pip
 - Do `python GenerateSystems.py`
@@ -68,7 +69,11 @@ This is a fork of the [original script](https://github.com/Sushutt/Infinite-Disc
 - Custom tkinter instead of the now paid pysimplegui
 - Fix several bugs in the original scripts (including solar panels not working)
 - Removed random unused assets (like a video of a thumbs up emoji, for whatever reason)
+- Better name generation (and to prevent duplicate names)
 
 ## Issues/problems to be worked on
 - Duplicate names (not enought names, need better name gen)
 - Continue to clean up the super dirty code
+
+## Electron-based star system viewer
+See the `InfiniteViewer` directory. I will continue to work on this and fix this. It is currently very bare bones

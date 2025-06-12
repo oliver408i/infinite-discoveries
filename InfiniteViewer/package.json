@@ -1,0 +1,24 @@
+{
+  "name": "infiniteviewer",
+  "version": "1.0.0",
+  "description": "Web-based simple 3d viewer for KSP star systems",
+  "main": "main.mjs",
+  "type": "module",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/oliver408i/infinite-discoveries.git"
+  },
+  "author": "nitrogendioxide",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/oliver408i/infinite-discoveries/issues"
+  },
+  "homepage": "https://github.com/oliver408i/infinite-discoveries#readme",
+  "dependencies": {
+    "electron": "^36.4.0"
+  }
+}
