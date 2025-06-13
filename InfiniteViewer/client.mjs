@@ -357,6 +357,7 @@ async function initializeScene(data) {
                 const offset = new THREE.Vector3(0, 0, body.radius * SCALE_FACTOR * 10 + 1);
                 camera.position.copy(target.clone().add(offset));
                 controls.target.copy(target);
+                currentFocus = bodyMeshes.indexOf(mesh);
             });
 
             const label = new CSS2DObject(labelDiv);
@@ -440,14 +441,25 @@ async function initializeScene(data) {
     await addBodiesToScene(system, new THREE.Vector3(0, 0, 0), new Set(), textureBasePathMap);
     console.log(`Displayed total bodies: ${displayedBodyCount}`);
 
+    // Focus camera on the first body after all bodies are added
+    if (bodyMeshes.length > 0) {
+        const target = bodyMeshes[0].position;
+        const offset = new THREE.Vector3(0, 0, bodyMeshes[0].geometry.parameters.radius * SCALE_FACTOR * 10 + 1);
+        camera.position.copy(target.clone().add(offset));
+        controls.target.copy(target);
+    }
+
     window.addEventListener('keydown', (e) => {
         if (e.key === 'Tab') {
             e.preventDefault();
             if (bodyMeshes.length === 0) return;
-            currentFocus = (currentFocus + 1) % bodyMeshes.length;
+            if (e.shiftKey) {
+                currentFocus = (currentFocus - 1 + bodyMeshes.length) % bodyMeshes.length;
+            } else {
+                currentFocus = (currentFocus + 1) % bodyMeshes.length;
+            }
             const target = bodyMeshes[currentFocus].position;
             const body = bodyMeshes[currentFocus];
-            // Use the same offset logic as the label click handler for consistency
             const offset = new THREE.Vector3(0, 0, body.geometry.parameters.radius * SCALE_FACTOR * 10 + 1);
             camera.position.copy(target.clone().add(offset));
             controls.target.copy(target);
