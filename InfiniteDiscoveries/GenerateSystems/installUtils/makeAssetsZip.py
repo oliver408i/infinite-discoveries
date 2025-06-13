@@ -1,7 +1,10 @@
 import os
 import zipfile
 
-with zipfile.ZipFile('assets.zip', 'w') as zipf:
+if os.path.exists('assets.zip'):
+    os.remove('assets.zip')
+
+with zipfile.ZipFile('assets.zip', 'w', compression=zipfile.ZIP_DEFLATED) as zipf:
     cwd = os.getcwd()
     while not os.path.basename(cwd) == 'InfiniteDiscoveries':
         print("Trying: " + cwd)

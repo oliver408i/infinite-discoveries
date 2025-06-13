@@ -1,12 +1,22 @@
 import importlib
 import Settings
-import textwrap, os, threading, shutil, time, numpy as np
+import textwrap, os, shutil, numpy as np
 import customtkinter as ctk
 import json
+import tkinter as tk
 import tkinter.messagebox as mb
+from pathlib import Path
+
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("dark-blue")
-CACHE_FILE = os.path.join(os.path.expanduser("~"), ".infinite_discoveries_cache.json")
+
+WORK_DIR = Path().home() / '.infinite_discoveries'
+WORK_DIR.mkdir(exist_ok=True)
+
+ASSETS_DIR = WORK_DIR/ 'assets'
+ASSETS_DIR.mkdir(exist_ok=True)
+
+CACHE_FILE = WORK_DIR / 'cache.json'
 
 def openSettings():
     ctk.set_appearance_mode("dark")
@@ -186,6 +196,7 @@ class DeleteWindow(ctk.CTk):
         self.deleteStarAreYouSure = False
         self.deleteDirAreYouSure = False
         self.targetPath = targetPath
+        self.isDownloading = True
 
         explText = textwrap.fill(
             "The below input requires the star's internal name. You can find it by going ingame and looking at the description, where the name is formatted as 'AA-11111' WARNING: will delete EVERY config/texture containing what you inputted! Leave blank to delete everything.",
@@ -265,6 +276,9 @@ class DeleteWindow(ctk.CTk):
 class MainUI(ctk.CTk):
     def __init__(self, targetPath, base_dir, Settings, state, startLoop, allActions, allThreads, mainThreadFinished, amountOfThingsDone, amountOfThingsToDo):
         super().__init__()
+        self.wm_attributes("-type", "splash") if os.name != 'nt' else self.overrideredirect(True)
+        self.option_add('*tearOff', False)
+        self.config(menu=tk.Menu(self))  # Empty menu
         self.title("Infinite Discoveries 0.9.9")
         self.geometry("800x500")
         self.minsize(700, 500)
@@ -374,6 +388,7 @@ class MainUI(ctk.CTk):
         # Start button
         self.start_button = ctk.CTkButton(self.input_frame, text="Start Generator", command=self.start_generator, text_color="#ffffff")
         self.start_button.pack(fill="x", padx=10, pady=(0, 5))
+        self.check_and_download_assets()
 
         # Stats frame
         self.stats_frame = ctk.CTkFrame(self.input_frame)
@@ -632,10 +647,17 @@ class MainUI(ctk.CTk):
             self.stats_texture_amount.configure(text="Amount of textures: No directory!")
 
         # Directory access
-        if os.access(self.targetPath, os.W_OK):
+        if os.access(self.targetPath, os.W_OK) and not self.isDownloading:
             self.okToAccess.configure(text="Selected directory can be written to.", text_color="#8fff8f")
+            if not self.running:
+                self.start_button.configure(state="normal")
+        elif self.isDownloading:
+            self.okToAccess.configure(text="Asset download in progress!", text_color="#ff8f8f")
+            self.start_button.configure(state="disabled")
         else:
             self.okToAccess.configure(text="Cannot write to selected directory!", text_color="#ff8f8f")
+            self.start_button.configure(state="disabled")
+        
 
         
         # Update start button text to latest action if changed
@@ -644,7 +666,7 @@ class MainUI(ctk.CTk):
             formatted_action = latest_action[1]
             if self.actionText != formatted_action:
                 self.actionText = formatted_action
-                self.start_button.configure(text=self.actionText)
+                self.start_button.configure(text=self.actionText, state="disabled")
 
         if self.allActions and 'Finished generation' in formatted_action:
             self.start_button.configure(text="Start Generator", state="normal")
@@ -674,3 +696,76 @@ class MainUI(ctk.CTk):
         # Properly close log file and exit
         self.ActionLog.close()
         self.destroy()
+    def check_and_download_assets(self):
+        import threading
+        import urllib.request
+        import zipfile
+        import time
+
+        def download():
+            self.isDownloading = True
+            try:
+                url = "http://nitrogendioxide.dev/files/id-assets.zip"
+                local_zip = WORK_DIR / "id-assets.zip"
+
+                if local_zip.exists():
+                    local_zip.unlink()
+
+                self.show_download_popup()
+                urllib.request.urlretrieve(url, local_zip, self.report_hook)
+
+                with zipfile.ZipFile(local_zip, 'r') as zip_ref:
+                    zip_ref.extractall(ASSETS_DIR)
+                local_zip.unlink()
+
+                self.close_download_popup()
+                self.isDownloading = False
+                mb.showinfo("Download Complete", f"Assets downloaded and extracted successfully.")
+            except Exception as e:
+                print("Asset download failed (or cancelled):", e)
+                self.download_popup_label.configure(text=f"Download failed:\n{e}")
+
+        # Only trigger download if directory is empty
+        if not any(p.is_dir() for p in ASSETS_DIR.iterdir()):
+            if hasattr(self, "start_button"):
+                self.start_button.configure(state="disabled")
+            threading.Thread(target=download, daemon=True).start()
+        else:
+            self.isDownloading = False
+
+    def show_download_popup(self):
+        self.download_popup = ctk.CTkToplevel(self)
+        self.download_popup.geometry("400x150")
+        self.download_popup.title("Downloading Assets")
+        self.download_popup_label = ctk.CTkLabel(self.download_popup, text="Downloading asset pack...", wraplength=350, justify="center", text_color="#ffffff")
+        self.download_popup_label.pack(pady=20, padx=20)
+        self.download_progress = ctk.CTkProgressBar(self.download_popup)
+        self.download_progress.set(0)
+        self.download_progress.pack(pady=10, padx=20)
+        self.download_popup.protocol("WM_DELETE_WINDOW", self.on_close)
+
+    def close_download_popup(self):
+        if hasattr(self, "download_popup"):
+            self.download_popup.destroy()
+
+    def report_hook(self, block_num, block_size, total_size):
+        import time
+        if total_size > 0:
+            downloaded = block_num * block_size
+            progress = min(downloaded / total_size, 1.0)
+            self.download_progress.set(progress)
+
+            now = time.time()
+            if not hasattr(self, "_last_report_time"):
+                self._last_report_time = now
+                self._start_time = now
+                self._last_downloaded = 0
+
+            elapsed = now - self._last_report_time
+            if elapsed >= 0.5:
+                speed = (downloaded - self._last_downloaded) / elapsed / (1024 * 1024)  # MB/s
+                self._last_report_time = now
+                self._last_downloaded = downloaded
+                self.download_popup_label.configure(
+                    text=f"Downloading asset pack... {int(progress * 100)}% ({speed:.2f} MB/s)"
+                )

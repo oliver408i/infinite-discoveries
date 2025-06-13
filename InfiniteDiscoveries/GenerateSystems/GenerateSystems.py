@@ -38,7 +38,6 @@ if currentProcess.name == "MainThread":
 import random
 import string
 from colour import Color
-import sys
 import time
 import math
 import numpy as np
