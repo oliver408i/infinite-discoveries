@@ -1,4 +1,5 @@
-import random, time, state
+import random, time
+from . import state
 
 # Writes star configs.
 def writeStarCfg(cfgSeed, starCfg, starName, starRadius, starMass, starDist, RGBfinal, starDistG, dispName, Tag, typeOfStar, Lum, coronaColor, parentBarycenter=None, period=None, maaoD=None, parentGalaxy=None, binaryEccentricity=None, binaryType=None, allActions=[], AmountOfMoonsToGenerate=0, AmountOfAsteroidsToGenerate=0, AmountOfPlanetsToGenerate=0, minPlanets=0, minMoons=0):

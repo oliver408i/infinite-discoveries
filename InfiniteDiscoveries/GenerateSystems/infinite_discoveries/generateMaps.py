@@ -1,5 +1,6 @@
 import numpy as np
-import random, time, math, Settings, noise, os, shutil, state
+import random, time, math, noise, os, shutil
+from . import state, Settings
 from PIL import Image, ImageEnhance, ImageChops, ImageOps, ImageFilter
 from colour import Color
 from scipy.signal import convolve2d

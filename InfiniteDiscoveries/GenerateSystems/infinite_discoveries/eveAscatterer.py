@@ -1,4 +1,5 @@
-import random, time, colorsys, state
+import random, time, colorsys
+from . import state
 
 #Makes EVE aurorae
 def addToEVEAurora(eveCfg, planetName, auroraBright, auroraClr):

@@ -1,4 +1,5 @@
-import random
+import random, time
+from . import state
 
 # Adds parallax scatters.
 def addParallaxScatter(seed, cfg, planetName, haslife, lifeclr, radius):
@@ -862,8 +863,6 @@ def addSubdividerFix(subdFixCfg, planetName):
         "       }\n"
         "   }\n"
     )
-
-import time, state
 
 # Writes the actual Parallax config.
 def addToParallaxCfg(seed, parallaxCfg, planetName, lava, lavaClr, groundType, icy, allActions):

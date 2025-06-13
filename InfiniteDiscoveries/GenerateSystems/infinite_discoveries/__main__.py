@@ -1,9 +1,8 @@
 import os
-import shutil, state
+import shutil
+from . import state, Settings
 
-import Settings
 from pathlib import Path
-base_dir = Path(__file__).resolve().parent.parent
 
 import multiprocessing
 import threading
@@ -16,25 +15,26 @@ everythingEnded = False
 amountOfThingsToDo = 0
 amountOfThingsDone = 0
 
-if currentProcess.name == "MainThread":
-    print(
-        "■■■■■■■■■■■■■  ■■        ■■  ■■■■■■■■  ■■■■■■■■■■■■■  ■■        ■■  ■■■■■■■■■■■■■  ■■■■■■■■■■■■■  ■■■■■■■■■\n"
-        "     ■■        ■■■■      ■■  ■■             ■■        ■■■■      ■■       ■■             ■■        ■      \n"
-        "     ■■        ■■  ■■    ■■  ■■■■■■         ■■        ■■  ■■    ■■       ■■             ■■        ■■■■■  \n"
-        "     ■■        ■■    ■■  ■■  ■■             ■■        ■■    ■■  ■■       ■■             ■■        ■      \n"
-        "     ■■        ■■      ■■■■  ■■             ■■        ■■      ■■■■       ■■             ■■        ■      \n"
-        "■■■■■■■■■■■■■  ■■        ■■  ■■        ■■■■■■■■■■■■■  ■■        ■■  ■■■■■■■■■■■■■       ■■        ■■■■■■■■■\n"
-    )
-    
-    print(
-        "■■■     ■■■■■     ■■■■       ■■■■       ■■       ■     ■      ■■■■■     ■■■■■    ■■■■■    ■■■■■     ■■■■\n"
-        "■  ■      ■      ■          ■          ■  ■       ■   ■       ■         ■   ■      ■      ■        ■\n"
-        "■  ■      ■       ■■■       ■          ■  ■       ■   ■       ■■■       ■■■        ■      ■■■       ■■■■\n"
-        "■  ■      ■          ■      ■          ■  ■        ■ ■        ■         ■ ■        ■      ■             ■\n"
-        "■■■     ■■■■■    ■■■■        ■■■■       ■■          ■         ■■■■■     ■  ■■    ■■■■■    ■■■■■     ■■■■\n"
-    )
-    
-    print("---------------------------------------------------------------------------------------------------------")
+print(
+    "■■■■■■■■■■■■■  ■■        ■■  ■■■■■■■■  ■■■■■■■■■■■■■  ■■        ■■  ■■■■■■■■■■■■■  ■■■■■■■■■■■■■  ■■■■■■■■■\n"
+    "     ■■        ■■■■      ■■  ■■             ■■        ■■■■      ■■       ■■             ■■        ■      \n"
+    "     ■■        ■■  ■■    ■■  ■■■■■■         ■■        ■■  ■■    ■■       ■■             ■■        ■■■■■  \n"
+    "     ■■        ■■    ■■  ■■  ■■             ■■        ■■    ■■  ■■       ■■             ■■        ■      \n"
+    "     ■■        ■■      ■■■■  ■■             ■■        ■■      ■■■■       ■■             ■■        ■      \n"
+    "■■■■■■■■■■■■■  ■■        ■■  ■■        ■■■■■■■■■■■■■  ■■        ■■  ■■■■■■■■■■■■■       ■■        ■■■■■■■■■\n"
+)
+
+print(
+    "■■■     ■■■■■     ■■■■       ■■■■       ■■       ■     ■      ■■■■■     ■■■■■    ■■■■■    ■■■■■     ■■■■\n"
+    "■  ■      ■      ■          ■          ■  ■       ■   ■       ■         ■   ■      ■      ■        ■\n"
+    "■  ■      ■       ■■■       ■          ■  ■       ■   ■       ■■■       ■■■        ■      ■■■       ■■■■\n"
+    "■  ■      ■          ■      ■          ■  ■        ■ ■        ■         ■ ■        ■      ■             ■\n"
+    "■■■     ■■■■■    ■■■■        ■■■■       ■■          ■         ■■■■■     ■  ■■    ■■■■■    ■■■■■     ■■■■\n"
+)
+print("Python, cross platform fork by nitrogendioxide (https://github.com/oliver408i/infinite-discoveries)")
+print("---------------------------------------------------------------------------------------------------------")
+print("Starting... On first run this will take a while! The UI will pop up once it's done.")
+
 import random
 import string
 from colour import Color
@@ -58,9 +58,12 @@ if Settings.convertTexturesToDDS == True:
 else:
     canConvertToDDS = False
 
-from nameGen import processName, getTables
-starTransisionTable,vacuumTransisionTable,oceanicTransisionTable,gaseousTransisionTable,lifeTransisionTable,rockyTransisionTable,lavaTransisionTable,icyTransisionTable = getTables()
-from templateGens import generateNebula, generateSuperheatedClouds, generateWRBinarySpiral
+from .nameGen import processName, getTables
+from .templateGens import generateNebula, generateSuperheatedClouds, generateWRBinarySpiral
+
+starTransisionTable, vacuumTransisionTable, oceanicTransisionTable, \
+gaseousTransisionTable, lifeTransisionTable, rockyTransisionTable, \
+lavaTransisionTable, icyTransisionTable = getTables()
 
 # Variables lamo
 templates = ["Dres", "Duna", "Laythe", "Mun", "Jool"] # Laythe and Mun are unused lmao lol oops.
@@ -88,7 +91,6 @@ totalMoonsGenerated = 0
 
 availableGalaxies = ["Sun","Sun","Sun","Sun","LKC_CtrlB","LKC_CtrlB","SKC_CtrlB"] # "Sun" is the milky way.
 
-print("Starting generator...")
 allPlanets = []
 wormholeList = []
 
@@ -106,20 +108,19 @@ def getStarColorMult(radi):
         colorMult = 45
     return colorMult
 
-from resConfig import createResourceConfig
+from .resConfig import createResourceConfig
 
+from .wormholeGen import generateWormholes # Unused?
 
-from wormholeGen import generateWormholes # Unused?
+from .parallax import addParallaxScatter, addToParallaxScatterFixCfg, addToParallaxCfg, addSubdividerFix
+from .generateDisk import generateDisks
 
-from parallax import addParallaxScatter, addToParallaxScatterFixCfg, addToParallaxCfg, addSubdividerFix
-from generateDisk import generateDisks
+from .eveAscatterer import addToVolumetricEveCfg, addPQSFix, addSunflareCfg, addToAtmoCfg, addToEVEAurora, addToEVECfg, addToOceanCfg, addToScattererList
 
-from eveAscatterer import addToVolumetricEveCfg, addPQSFix, addSunflareCfg, addToAtmoCfg, addToEVEAurora, addToEVECfg, addToOceanCfg, addToScattererList
+from .starConfig import writeBarycenterCfg, writeStarCfg
+from .bodyConfig import writeBodyCfg, genRing
 
-from starConfig import writeBarycenterCfg, writeStarCfg
-from bodyConfig import writeBodyCfg, genRing
-
-from generateMaps import generateGasGiantMaps, generatePlanetMaps
+from .generateMaps import generateGasGiantMaps, generatePlanetMaps
 
 # Picks parameters for a moon.
 def generateMoon(planetSeed, moonNum, parentPlanet, moonsGenerated, parentRadius, gasGiantP, atmoCfg, starN, starColor, listCfg, colorsRound, oceanCfg, eveCfg, VolumetricEveCfg, Lum, parentSMA, starRadius, parallaxCfg, subdfixCfg, parallax_scatterfix_Cfg, parallax_scatter_Cfg, rationalResources_Cfg, moonDistMult, isAsteroid, binaryParents=None, distBinaryParents=None,distBinaryStarNum=None):
@@ -418,7 +419,7 @@ def generateMoon(planetSeed, moonNum, parentPlanet, moonsGenerated, parentRadius
     else:
         oceanFactor = moonRNG.randint(16,128)
 
-    generatePlanetMaps(vacuum, terrainR, terrainG, terrainB, planetName, ocean, oceanR, oceanG, oceanB, atmoPress, geoActive, icecaps, finalTemp, life, plantColor, planetRadius, anomaly, anLatLon, activeVolcano, lava, False, oceanFactor, isAsteroid, moonSeed, icy, allActions, base_dir, lavaSpectrum, everythingEnded, targetPath, canConvertToDDS)
+    generatePlanetMaps(vacuum, terrainR, terrainG, terrainB, planetName, ocean, oceanR, oceanG, oceanB, atmoPress, geoActive, icecaps, finalTemp, life, plantColor, planetRadius, anomaly, anLatLon, activeVolcano, lava, False, oceanFactor, isAsteroid, moonSeed, icy, allActions, state.base_dir, lavaSpectrum, everythingEnded, targetPath, canConvertToDDS)
 
     ringInn = 2000
     ringOut = 2001
@@ -866,11 +867,11 @@ def generate(seedThing,starN,starRadius,starMass,starColor,atmoCfg,listCfg,color
 
     planetCfg = open(targetPath + "/Configs/" + planetName + ".cfg","x")
     if gasGiant == True:
-        generateGasGiantMaps(planetSeed, terrainR, terrainG, terrainB, planetName, allActions, targetPath, base_dir, canConvertToDDS)
+        generateGasGiantMaps(planetSeed, terrainR, terrainG, terrainB, planetName, allActions, targetPath, state.base_dir, canConvertToDDS)
     else:
         #rockyPlanetMapThread = threading.Thread(target=GeneratePlanetMaps, args=(vacuum, terrainR, terrainG, terrainB, planetName, ocean, oceanR, oceanG, oceanB, atmoPress, geoActive, icecaps, finalTemp, life, plantColor, planetRadius, anomaly, anLatLon, activeVolcano, lava))
         #rockyPlanetMapThread.run()
-        generatePlanetMaps(vacuum, terrainR, terrainG, terrainB, planetName, ocean, oceanR, oceanG, oceanB, atmoPress, geoActive, icecaps, finalTemp, life, plantColor, planetRadius, anomaly, anLatLon, activeVolcano, lava, tidallyLocked, oceanFactor, False, planetSeed, icy, allActions, base_dir, lavaSpectrum, everythingEnded, targetPath, canConvertToDDS)
+        generatePlanetMaps(vacuum, terrainR, terrainG, terrainB, planetName, ocean, oceanR, oceanG, oceanB, atmoPress, geoActive, icecaps, finalTemp, life, plantColor, planetRadius, anomaly, anLatLon, activeVolcano, lava, tidallyLocked, oceanFactor, False, planetSeed, icy, allActions, state.base_dir, lavaSpectrum, everythingEnded, targetPath, canConvertToDDS)
     
     ringChance = int((AmountOfPlanetsToGenerate - currentPlanetNum)+1)
 
@@ -1311,7 +1312,7 @@ def generateStar(starSeed, AmountOfPlanetsToGenerate, systemName, targetFilepath
     # Wolf Rayet Thingamajigs
     if binaryType == "Distant" or parentBarycenter == None:
         if starTypeStr == "WolfRayet":
-            generateNebula(starName, base_dir)
+            generateNebula(starName, state.base_dir)
 
     # Not type-specific settings.
     if parentBarycenter == None:
@@ -1349,10 +1350,7 @@ def generateStar(starSeed, AmountOfPlanetsToGenerate, systemName, targetFilepath
         writeStarCfg(starSeed, starCfg, starName, starRadius, starMass, starDist, RGBfinal, starDistG, dispName, Tag, starTypeStr, Lum, coronaColor, parentBarycenter, binaryP, maaoD, None, binaryEccentricity, binaryType, allActions, AmountOfMoonsToGenerate, AmountOfAsteroidsToGenerate, AmountOfPlanetsToGenerate, minPlanets, minMoons)
 
     if parentBarycenter == None or binaryType == "Distant":
-        #if binaryType == "Distant":
-        #    if planetsNum > 9:
-        #        planetsNum == 9
-        #    planetsNum = planetsNum/1.5
+
         listCfg = open(targetPath + "/Visuals/Scatterer/" + starName + "_ScattererList" + ".cfg","x")
         listCfg.write(
             "@Scatterer_planetsList:FINAL\n"
@@ -1847,8 +1845,8 @@ def generateBarycenter(starSeed, AmountOfPlanetsToGenerate, targetFilepath):
 
     if binaryType == "Near":
         if starTypeStr1 == "WolfRayet" or starTypeStr2 == "WolfRayet":
-            generateWRBinarySpiral(systemName, base_dir)
-            generateNebula(systemName, base_dir)
+            generateWRBinarySpiral(systemName, state.base_dir)
+            generateNebula(systemName, state.base_dir)
 
     if starTypeStr1 == "WolfRayet" or starTypeStr2 == "WolfRayet":
         planetsNum = baryGenRNG.randint(minPlanets,AmountOfPlanetsToGenerate)/2
@@ -2008,35 +2006,36 @@ def systemLoop(starAmnt, planetAmnt, moonAmnt, asteroidAmnt, targetFilepath, cus
     os.makedirs(targetFilepath + "/InfiniteDiscoveries/Cache", exist_ok=True)
     allActions.append([time.localtime(),targetFilepath + "/InfiniteDiscoveries/Cache"])
     try:
-        shutil.copytree(base_dir / "Misc", Path(targetFilepath) / "InfiniteDiscoveries" / "Misc")
+        shutil.copytree(state.base_dir / "Misc", Path(targetFilepath) / "InfiniteDiscoveries" / "Misc")
         allActions.append([time.localtime(),"Cloning: " + "filepath" + "/Misc"])
     except FileExistsError:
         allActions.append([time.localtime(),str(Path(targetFilepath) / "InfiniteDiscoveries" / "Misc") + " Already exists."])
 
     try:
-        shutil.copytree(base_dir / "Visuals", targetFilepath + "/InfiniteDiscoveries/Visuals")
-        allActions.append([time.localtime(),"Cloning: " + str(base_dir / "Visuals")])
+        shutil.copytree(state.base_dir / "Visuals", targetFilepath + "/InfiniteDiscoveries/Visuals")
+        allActions.append([time.localtime(),"Cloning: " + str(state.base_dir / "Visuals")])
     except FileExistsError:
         allActions.append([time.localtime(),str(Path(targetFilepath) / "InfiniteDiscoveries" / "Visuals") + " Already exists."])
         pass
     try:
-        shutil.copytree(base_dir / "Textures", targetFilepath + "/InfiniteDiscoveries/Textures")
-        allActions.append([time.localtime(),"Cloning: " + str(base_dir / "Textures")])
+        shutil.copytree(state.base_dir / "Textures", targetFilepath + "/InfiniteDiscoveries/Textures")
+        allActions.append([time.localtime(),"Cloning: " + str(state.base_dir / "Textures")])
     except FileExistsError:
         allActions.append([time.localtime(),str(Path(targetFilepath) / "InfiniteDiscoveries" / "Textures") + " Already exists."])
         pass
     try:
-        shutil.copytree(base_dir / "Presets", targetFilepath + "/InfiniteDiscoveries/Presets")
-        allActions.append([time.localtime(),"Cloning: " + str(base_dir / "Presets")])
+        shutil.copytree(state.base_dir / "Presets", targetFilepath + "/InfiniteDiscoveries/Presets")
+        allActions.append([time.localtime(),"Cloning: " + str(state.base_dir / "Presets")])
     except FileExistsError:
         allActions.append([time.localtime(),str(Path(targetFilepath) / "InfiniteDiscoveries" / "Presets") + " Already exists."])
         pass
     try:
-        shutil.copy(base_dir / "_Gameplay Settings.cfg", targetFilepath + "/InfiniteDiscoveries/")
-        allActions.append([time.localtime(),"Cloning: " + str(base_dir / "_Gameplay Settings.cfg")])
+        shutil.copy(state.base_dir / "_Gameplay Settings.cfg", targetFilepath + "/InfiniteDiscoveries/")
+        allActions.append([time.localtime(),"Cloning: " + str(state.base_dir / "_Gameplay Settings.cfg")])
     except FileExistsError:
         allActions.append([time.localtime(),str(Path(targetFilepath) / "InfiniteDiscoveries" / "_Gameplay Settings.cfg") + " Already exists."])
         pass
+
 
     state.allActionArrayUpdated = True
 
@@ -2069,6 +2068,12 @@ def systemLoop(starAmnt, planetAmnt, moonAmnt, asteroidAmnt, targetFilepath, cus
 
     global targetPath
     targetPath = targetFilepath + "/InfiniteDiscoveries"
+
+    # Empty dirs not zipped by zipfile
+    os.makedirs(targetPath + "/Visuals/Scatterer", exist_ok=True)
+    os.makedirs(targetPath + "/Visuals/EVE/Configs", exist_ok=True)
+    os.makedirs(targetPath + "/Visuals/Parallax/Configs", exist_ok=True)
+    os.makedirs(targetPath + "/Misc/RR", exist_ok=True)
 
     for i in range(0,StarAmount):
         randomSeedRNG = random.Random()
@@ -2143,14 +2148,13 @@ def startLoop(starAm,planetAm,moonAM,asteroidAM,targetPath,customSeed=None,overr
     waitForThreadsToFinishThread = threading.Thread(target=waitForThreadsToFinish, args=(loopProcess,None), daemon=True)
     waitForThreadsToFinishThread.start()
 
-from ui import MainUI
 
-if currentProcess.name == "MainThread":
+
+def main():
+    from .ui import MainUI
     app = MainUI(
         targetPath=targetPath,
-        base_dir=base_dir,
         Settings=Settings,
-        state=state,
         startLoop=startLoop,
         allActions=allActions,
         allThreads=allThreads,

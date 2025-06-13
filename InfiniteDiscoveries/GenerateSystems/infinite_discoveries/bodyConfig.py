@@ -1,4 +1,5 @@
-import random, time, state
+import random, time
+from . import state
 from PIL import Image, ImageChops
 
 # Generates rings.

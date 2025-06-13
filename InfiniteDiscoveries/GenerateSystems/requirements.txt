@@ -1,8 +1,0 @@
-colour
-customtkinter
-noise
-numpy
-pillow
-scipy
-tk
-Wand

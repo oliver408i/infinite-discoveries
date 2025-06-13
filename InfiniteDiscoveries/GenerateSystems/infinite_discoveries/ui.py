@@ -1,5 +1,5 @@
 import importlib
-import Settings
+from . import Settings, state
 import textwrap, os, shutil, numpy as np
 import customtkinter as ctk
 import json
@@ -15,6 +15,8 @@ WORK_DIR.mkdir(exist_ok=True)
 
 ASSETS_DIR = WORK_DIR/ 'assets'
 ASSETS_DIR.mkdir(exist_ok=True)
+
+state.base_dir = ASSETS_DIR
 
 CACHE_FILE = WORK_DIR / 'cache.json'
 
@@ -274,7 +276,7 @@ class DeleteWindow(ctk.CTk):
                 self.after(2000, self.reset_all_button)
 
 class MainUI(ctk.CTk):
-    def __init__(self, targetPath, base_dir, Settings, state, startLoop, allActions, allThreads, mainThreadFinished, amountOfThingsDone, amountOfThingsToDo):
+    def __init__(self, targetPath, Settings, startLoop, allActions, allThreads, mainThreadFinished, amountOfThingsDone, amountOfThingsToDo):
         super().__init__()
         self.wm_attributes("-type", "splash") if os.name != 'nt' else self.overrideredirect(True)
         self.option_add('*tearOff', False)
@@ -285,9 +287,7 @@ class MainUI(ctk.CTk):
         self.configure(bg="#1f1f1f")
         self.amountValues = [1, 5, 4, 2]
         self.targetPath = targetPath
-        self.base_dir = base_dir
         self.Settings = Settings
-        self.app_state = state
         self.startLoop = startLoop
         self.allActions = allActions
         self.allThreads = allThreads
@@ -318,7 +318,7 @@ class MainUI(ctk.CTk):
         cache = load_cache()
 
         # File log
-        self.ActionLog = open(base_dir / "ActionLog.txt", "a")
+        self.ActionLog = open(state.base_dir / "ActionLog.txt", "a")
 
         # Main frames
         self.input_frame = ctk.CTkFrame(self)
@@ -700,7 +700,6 @@ class MainUI(ctk.CTk):
         import threading
         import urllib.request
         import zipfile
-        import time
 
         def download():
             self.isDownloading = True

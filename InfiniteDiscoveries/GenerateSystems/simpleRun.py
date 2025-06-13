@@ -1,0 +1,1 @@
+import infinite_discoveries.__main__
