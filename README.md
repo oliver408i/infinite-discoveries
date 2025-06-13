@@ -74,5 +74,7 @@ This is a fork of the [original script](https://github.com/Sushutt/Infinite-Disc
 - Duplicate names (not enought names, need better name gen)
 - Continue to clean up the super dirty code
 
-## Electron-based star system viewer
-See the `InfiniteViewer` directory. I will continue to work on this and fix this. It is currently very bare bones
+## Web-based star system viewer
+See the `InfiniteViewer` directory. I will continue to work on this and fix this.  
+Use it to preview your star systems. Just zip up the generated folder and upload it to https://nitrogendioxide.dev/infiniteviewer/  
+You can ignore the planet called RedGiantThing, it won't show up in game
