@@ -48,7 +48,7 @@ This is a fork of the [original script](https://github.com/Sushutt/Infinite-Disc
 - Download the latest `.whl` file from the releases page (right sidebar)
 - Set up a venv if you need to (for install pip packages); activate it
 - Run `pip install path/to/theFileYouJustDownloaded.whl` (you can drag the whl file into your terminal. You might use `pip3` or `py -m pip`)
-- Run the command `infinite-discoveries`
+- Run the command `infinite-discoveries` or `python -m infinite_discoveries`
 - Wait a bit for the GUI to open
 ### After generation
 - Check the `Configs` folder for any bad planet files (usually those with zero bytes or empty)
