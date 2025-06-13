@@ -40,10 +40,11 @@ This is a fork of the [original script](https://github.com/Sushutt/Infinite-Disc
 ## HOW TO USE
 ### Requirements (install first)
 - Python 3 (Tested on python3.13)
-- MagickWand (see below)
+- MagickWand (follow [this](https://docs.wand-py.org/en/0.6.7/guide/install.html). Ignore the `pip install` command here)
 - Kopernicus (and deps)
 - EVE & Scatterer (optional visuals)
 - Parallax (optional ground scatters)
+- SigmaLoadingScreens (optional visuals)
 ### Running
 - Download the latest `.whl` file from the releases page (right sidebar)
 - Set up a venv if you need to (for install pip packages); activate it
@@ -55,12 +56,6 @@ This is a fork of the [original script](https://github.com/Sushutt/Infinite-Disc
 - If you find any, you can either delete them, or delete the whole `InfiniteDiscoveries` folder and regenerate
 - (Optional) If you don't use Parallax or the other visual mods, you can remove their settings and assets from the `Visuals` folder to save space.
 - Now you can boot up KSP and play
-
-<details><summary>MagickWand Install</summary>
-<code>libmagickwand-dev</code> for APT on Debian/Ubuntu<br>
-<code>imagemagick</code> for MacPorts/Homebrew on Mac<br>
-<code>ImageMagick-devel</code> for Yum on CentOS
-</details>
 
 ## Improvements over the original
 - Code up the damn code (it's a big mess, I'm still working on it)
@@ -76,5 +71,6 @@ This is a fork of the [original script](https://github.com/Sushutt/Infinite-Disc
 
 ## Web-based star system viewer
 See the `InfiniteViewer` directory. I will continue to work on this and fix this.  
+A seperate program that allows you to preview star systems and planets, without booting up KSP or installing anything extra.
 Use it to preview your star systems. Just zip up the generated folder and upload it to https://nitrogendioxide.dev/infiniteviewer/  
 You can ignore the planet called RedGiantThing, it won't show up in game
