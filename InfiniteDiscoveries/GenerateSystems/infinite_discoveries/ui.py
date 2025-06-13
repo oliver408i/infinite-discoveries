@@ -7,6 +7,8 @@ import tkinter as tk
 import tkinter.messagebox as mb
 from pathlib import Path
 
+from ._version import __version__
+
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("dark-blue")
 
@@ -281,7 +283,7 @@ class MainUI(ctk.CTk):
         self.wm_attributes("-type", "splash") if os.name != 'nt' else self.overrideredirect(True)
         self.option_add('*tearOff', False)
         self.config(menu=tk.Menu(self))  # Empty menu
-        self.title("Infinite Discoveries 0.9.9")
+        self.title("Infinite Discoveries " + __version__)
         self.geometry("800x500")
         self.minsize(700, 500)
         self.configure(bg="#1f1f1f")
