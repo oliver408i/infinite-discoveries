@@ -45,13 +45,11 @@ This is a fork of the [original script](https://github.com/Sushutt/Infinite-Disc
 - EVE & Scatterer (optional visuals)
 - Parallax (optional ground scatters)
 ### Running
-- Download the code (you only need the `InfiniteDiscoveries` folder)
-- Navigate to the `GenerateSystems` directory
-- Do `pip install -r requirements.txt`. Use a venv if needed, and make sure you use the right pip
-- Do `python GenerateSystems.py`
-- Use the UI to set your settings and select your `GameData` directory
-- Hit generate and wait for it to finish  
-*Im working on packaging it so it's easier to run*
+- Download the latest `.whl` file from the releases page (right sidebar)
+- Set up a venv if you need to (for install pip packages); activate it
+- Run `pip install path/to/theFileYouJustDownloaded.whl` (you can drag the whl file into your terminal. You might use `pip3` or `py -m pip`)
+- Run the command `infinite-discoveries`
+- Wait a bit for the GUI to open
 ### After generation
 - Check the `Configs` folder for any bad planet files (usually those with zero bytes or empty)
 - If you find any, you can either delete them, or delete the whole `InfiniteDiscoveries` folder and regenerate

@@ -2164,20 +2164,21 @@ def main():
     )
     app.mainloop()
 
+    print("All done!")
+    print("---------------------------------------------------------------")
+    print("Total number of stars generated: " + str(totalStarsGenerated))
+    print("Total number of planets generated: " + str(totalPlanetsGenerated))
+    print("Total number of moons generated: " + str(totalMoonsGenerated))
+    print("---------------------------------------------------------------")
+    print("Total objects generated: " + str(totalStarsGenerated + totalPlanetsGenerated + totalMoonsGenerated))
+    print("---------------------------------------------------------------")
+    endTime = time.time()
+    elapsedTime = endTime - startTime
+    if elapsedTime > 60:
+        print("Time elapsed: " + str(round(elapsedTime/60,2)) + " minutes.")
+    elif elapsedTime < 60:
+        print("Time elapsed: " + str(round(elapsedTime,2)) + " seconds.")
 
-#systemLoop(StarAmount, AmountOfPlanetsToGenerate, AmountOfMoonsToGenerate)
 
-print("All done!")
-print("---------------------------------------------------------------")
-print("Total number of stars generated: " + str(totalStarsGenerated))
-print("Total number of planets generated: " + str(totalPlanetsGenerated))
-print("Total number of moons generated: " + str(totalMoonsGenerated))
-print("---------------------------------------------------------------")
-print("Total objects generated: " + str(totalStarsGenerated + totalPlanetsGenerated + totalMoonsGenerated))
-print("---------------------------------------------------------------")
-endTime = time.time()
-elapsedTime = endTime - startTime
-if elapsedTime > 60:
-    print("Time elapsed: " + str(round(elapsedTime/60,2)) + " minutes.")
-elif elapsedTime < 60:
-    print("Time elapsed: " + str(round(elapsedTime,2)) + " seconds.")
+if __name__ == "__main__":
+    main()
