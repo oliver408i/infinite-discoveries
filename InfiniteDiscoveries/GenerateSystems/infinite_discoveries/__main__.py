@@ -1,6 +1,7 @@
 import os
 import shutil
 from . import state, Settings
+from ._version import __version__
 
 from pathlib import Path
 
@@ -31,6 +32,7 @@ print(
     "■  ■      ■          ■      ■          ■  ■        ■ ■        ■         ■ ■        ■      ■             ■\n"
     "■■■     ■■■■■    ■■■■        ■■■■       ■■          ■         ■■■■■     ■  ■■    ■■■■■    ■■■■■     ■■■■\n"
 )
+print("Version: " + __version__)
 print("Python, cross platform fork by nitrogendioxide (https://github.com/oliver408i/infinite-discoveries)")
 print("---------------------------------------------------------------------------------------------------------")
 print("Starting... On first run this will take a while! The UI will pop up once it's done.")

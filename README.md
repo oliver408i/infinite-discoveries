@@ -71,6 +71,6 @@ This is a fork of the [original script](https://github.com/Sushutt/Infinite-Disc
 
 ## Web-based star system viewer
 See the `InfiniteViewer` directory. I will continue to work on this and fix this.  
-A seperate program that allows you to preview star systems and planets, without booting up KSP or installing anything extra.
+A separate program that allows you to preview star systems and planets, without booting up KSP or installing anything extra.
 Use it to preview your star systems. Just zip up the generated folder and upload it to https://nitrogendioxide.dev/infiniteviewer/  
 You can ignore the planet called RedGiantThing, it won't show up in game
