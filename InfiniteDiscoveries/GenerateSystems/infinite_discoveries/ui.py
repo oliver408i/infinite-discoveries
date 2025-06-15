@@ -15,26 +15,55 @@ ctk.set_default_color_theme("dark-blue")
 WORK_DIR = Path().home() / '.infinite_discoveries'
 WORK_DIR.mkdir(exist_ok=True)
 
-ASSETS_DIR = WORK_DIR/ 'assets'
+ASSETS_DIR = WORK_DIR / 'assets'
 ASSETS_DIR.mkdir(exist_ok=True)
 
 state.base_dir = ASSETS_DIR
 
 CACHE_FILE = WORK_DIR / 'cache.json'
 
+CONFIG_PATH = WORK_DIR / "settings.json"
+
+
+def load_user_settings():
+    if CONFIG_PATH.exists():
+        with open(CONFIG_PATH, "r") as f:
+            saved = json.load(f)
+    else:
+        saved = {}
+
+    for key in dir(Settings):
+        if key.startswith("__"):
+            continue
+        if key not in saved:
+            saved[key] = getattr(Settings, key)
+    return saved
+
+def save_user_settings(settings_dict):
+    CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with open(CONFIG_PATH, "w") as f:
+        json.dump(settings_dict, f, indent=4)
+
 def openSettings():
     ctk.set_appearance_mode("dark")
     ctk.set_default_color_theme("dark-blue")
     importlib.reload(Settings)
 
-    with open("Settings.py", "r") as settingsFile:
-        settingsData = settingsFile.readlines()
+    settingsData = load_user_settings()
 
-    usesMultithreading = Settings.useMultithreading
-    convertsToDDS = Settings.convertTexturesToDDS
-    fantasyNames = Settings.fantasyNames
-    minPlanets = Settings.minPlanets
-    minMoons = Settings.minMoons
+    usesMultithreading = settingsData.get("useMultithreading", Settings.useMultithreading)
+    convertsToDDS = settingsData.get("convertTexturesToDDS", Settings.convertTexturesToDDS)
+    fantasyNames = settingsData.get("fantasyNames", Settings.fantasyNames)
+    minPlanets = settingsData.get("minPlanets", Settings.minPlanets)
+    minMoons = settingsData.get("minMoons", Settings.minMoons)
+
+    # New settings for binary and star overrides
+    binaryOverride = settingsData.get("binaryOverride", getattr(Settings, "binaryOverride", Settings.binaryOverride))
+    binaryTypeOverride = settingsData.get("binaryTypeOverride", getattr(Settings, "binaryTypeOverride", Settings.binaryTypeOverride))
+    starTypeOverride = settingsData.get("starTypeOverride", getattr(Settings, "starTypeOverride", Settings.starTypeOverride))
+    starTypeOverrideBinary1 = settingsData.get("starTypeOverrideBinary1", getattr(Settings, "starTypeOverrideBinary1", Settings.starTypeOverrideBinary1))
+    starTypeOverrideBinary2 = settingsData.get("starTypeOverrideBinary2", getattr(Settings, "starTypeOverrideBinary2", Settings.starTypeOverrideBinary2))
+    binaryBrightnessMultiplier = settingsData.get("binaryBrightnessMultiplier", getattr(Settings, "binaryBrightnessMultiplier", Settings.binaryBrightnessMultiplier))
 
     class SettingsWindow(ctk.CTk):
         def __init__(self):
@@ -49,14 +78,94 @@ def openSettings():
             self.fantasy_names_var = ctk.BooleanVar(value=fantasyNames)
             self.min_planets_var = ctk.StringVar(value=str(minPlanets))
             self.min_moons_var = ctk.StringVar(value=str(minMoons))
+            # New variables for binary/star overrides
+            self.binary_override_var = ctk.StringVar(value="Default (random)" if binaryOverride is None else str(binaryOverride))
+            self.binary_type_override_var = ctk.StringVar(value="Default (random)" if binaryTypeOverride is None else str(binaryTypeOverride))
+            star_type_options = [
+                "Default (random)",
+                "Red Giant (0–18)",
+                "White Dwarf (19–28)",
+                "Neutron Star (29–39)",
+                "Brown Dwarf (40–50)",
+                "Wolf-Rayet (51–55)",
+                "Main Sequence (56–175)"
+            ]
+            # Map numeric to label for initial value
+            def get_star_type_label(val):
+                mapping = {
+                    None: "Default (random)",
+                    "None": "Default (random)",
+                    0: "Red Giant (0–18)",
+                    "0": "Red Giant (0–18)",
+                    19: "White Dwarf (19–28)",
+                    "19": "White Dwarf (19–28)",
+                    29: "Neutron Star (29–39)",
+                    "29": "Neutron Star (29–39)",
+                    40: "Brown Dwarf (40–50)",
+                    "40": "Brown Dwarf (40–50)",
+                    51: "Wolf-Rayet (51–55)",
+                    "51": "Wolf-Rayet (51–55)",
+                    56: "Main Sequence (56–175)",
+                    "56": "Main Sequence (56–175)"
+                }
+                return mapping.get(val, "Default (random)")
+
+            self.star_type_override_var = ctk.StringVar(
+                value=get_star_type_label(starTypeOverride)
+            )
+            self.star_type_override_b1_var = ctk.StringVar(
+                value=get_star_type_label(starTypeOverrideBinary1)
+            )
+            self.star_type_override_b2_var = ctk.StringVar(
+                value=get_star_type_label(starTypeOverrideBinary2)
+            )
+            self.binary_brightness_multiplier_var = ctk.StringVar(
+                value=binaryBrightnessMultiplier
+            )
 
             # Main frame
             self.main_frame = ctk.CTkFrame(self)
             self.main_frame.pack(fill="both", expand=True, padx=20, pady=20)
 
-            # Generator Settings Frame
-            self.gen_settings_frame = ctk.CTkFrame(self.main_frame)
-            self.gen_settings_frame.pack(fill="both", expand=True, padx=20, pady=(10, 10))
+            # Scrollable canvas frame
+            self.scroll_frame = ctk.CTkFrame(self.main_frame)
+            self.scroll_frame.pack(fill="both", expand=True, padx=20, pady=(10, 0))
+
+            self.canvas = tk.Canvas(self.scroll_frame, bg="#2b2b2b", highlightthickness=0, borderwidth=0)
+            self.scrollbar = ctk.CTkScrollbar(self.scroll_frame, orientation="vertical", command=self.canvas.yview)
+            self.scrollable_frame = ctk.CTkFrame(self.canvas)
+
+            self.scrollable_frame.bind(
+                "<Configure>",
+                lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+            )
+            self.canvas_window = self.canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
+            self.canvas.configure(yscrollcommand=self.scrollbar.set)
+
+            self.canvas.pack(side="left", fill="both", expand=True)
+            self.scrollbar.pack(side="right", fill="y")
+
+            # Platform-aware mousewheel binding for scroll reliability (macOS/Linux/Windows)
+            def _on_mousewheel(event):
+                # macOS/Linux trackpad and wheel compatibility
+                if hasattr(event, "num") and (event.num == 4 or event.delta > 0):
+                    self.canvas.yview_scroll(-1, "units")
+                elif hasattr(event, "num") and (event.num == 5 or event.delta < 0):
+                    self.canvas.yview_scroll(1, "units")
+                elif hasattr(event, "delta"):
+                    if event.delta > 0:
+                        self.canvas.yview_scroll(-1, "units")
+                    elif event.delta < 0:
+                        self.canvas.yview_scroll(1, "units")
+
+            self.canvas.bind_all("<MouseWheel>", _on_mousewheel)  # Windows and macOS standard
+            self.canvas.bind_all("<Button-4>", _on_mousewheel)    # Linux/mac trackpad scroll up
+            self.canvas.bind_all("<Button-5>", _on_mousewheel)    # Linux/mac trackpad scroll down
+
+            # Make scrollable frame width track canvas width
+            self.canvas.bind("<Configure>", lambda e: self.canvas.itemconfig(self.canvas_window, width=e.width))
+
+            self.gen_settings_frame = self.scrollable_frame  # Redirect UI creation to scrollable frame
 
             # Multithreading
             self.use_threading_check = ctk.CTkCheckBox(
@@ -114,11 +223,60 @@ def openSettings():
             self.min_moons_entry = ctk.CTkEntry(master=self.gen_settings_frame, textvariable=self.min_moons_var, width=80, text_color="#ffffff", fg_color="transparent")
             self.min_moons_entry.grid(row=9, column=0, sticky="w", padx=(10, 0))
 
-            # Removed UI Settings Frame (right column) and show console checkbox and label
+            # --- New UI Elements for binary/star overrides ---
+            self.binary_override_label = ctk.CTkLabel(master=self.gen_settings_frame, text="Binary Override", text_color="#ffffff")
+            self.binary_override_label.grid(row=10, column=0, sticky="w", padx=(10, 0), pady=(10, 0))
+            self.binary_override_dropdown = ctk.CTkOptionMenu(
+                master=self.gen_settings_frame,
+                values=["Default (random)", "True", "False"],
+                variable=self.binary_override_var
+            )
+            self.binary_override_dropdown.grid(row=11, column=0, sticky="w", padx=(10, 0))
+
+            self.binary_type_override_label = ctk.CTkLabel(master=self.gen_settings_frame, text="Binary Type Override", text_color="#ffffff")
+            self.binary_type_override_label.grid(row=12, column=0, sticky="w", padx=(10, 0), pady=(10, 0))
+            self.binary_type_override_dropdown = ctk.CTkOptionMenu(
+                master=self.gen_settings_frame,
+                values=["Default (random)", "True", "False"],
+                variable=self.binary_type_override_var
+            )
+            self.binary_type_override_dropdown.grid(row=13, column=0, sticky="w", padx=(10, 0))
+
+            self.star_type_override_label = ctk.CTkLabel(master=self.gen_settings_frame, text="Star Type Override", text_color="#ffffff")
+            self.star_type_override_label.grid(row=14, column=0, sticky="w", padx=(10, 0), pady=(10, 0))
+            self.star_type_override_dropdown = ctk.CTkOptionMenu(
+                master=self.gen_settings_frame,
+                values=star_type_options,
+                variable=self.star_type_override_var
+            )
+            self.star_type_override_dropdown.grid(row=15, column=0, sticky="w", padx=(10, 0))
+
+            self.star_type_override_b1_label = ctk.CTkLabel(master=self.gen_settings_frame, text="Binary Star 1 Type Override", text_color="#ffffff")
+            self.star_type_override_b1_label.grid(row=16, column=0, sticky="w", padx=(10, 0), pady=(10, 0))
+            self.star_type_override_b1_entry = ctk.CTkOptionMenu(
+                master=self.gen_settings_frame,
+                values=star_type_options,
+                variable=self.star_type_override_b1_var
+            )
+            self.star_type_override_b1_entry.grid(row=17, column=0, sticky="w", padx=(10, 0))
+
+            self.star_type_override_b2_label = ctk.CTkLabel(master=self.gen_settings_frame, text="Binary Star 2 Type Override", text_color="#ffffff")
+            self.star_type_override_b2_label.grid(row=18, column=0, sticky="w", padx=(10, 0), pady=(10, 0))
+            self.star_type_override_b2_entry = ctk.CTkOptionMenu(
+                master=self.gen_settings_frame,
+                values=star_type_options,
+                variable=self.star_type_override_b2_var
+            )
+            self.star_type_override_b2_entry.grid(row=19, column=0, sticky="w", padx=(10, 0))
+
+            self.binary_brightness_multiplier_label = ctk.CTkLabel(master=self.gen_settings_frame, text="Binary Brightness Multiplier", text_color="#ffffff")
+            self.binary_brightness_multiplier_label.grid(row=20, column=0, sticky="w", padx=(10, 0), pady=(10, 0))
+            self.binary_brightness_multiplier_entry = ctk.CTkEntry(master=self.gen_settings_frame, textvariable=self.binary_brightness_multiplier_var, width=120, text_color="#ffffff", fg_color="transparent")
+            self.binary_brightness_multiplier_entry.grid(row=21, column=0, sticky="w", padx=(10, 0))
 
             # Apply Button
-            self.apply_button = ctk.CTkButton(master=self.main_frame, text="Apply", command=self.apply_settings, text_color="#ffffff")
-            self.apply_button.pack(pady=(10, 10))
+            self.apply_button = ctk.CTkButton(master=self, text="Apply", command=self.apply_settings, text_color="#ffffff")
+            self.apply_button.pack(side="bottom", pady=(10, 10))
 
             # Validation: only allow integer in min_planets and min_moons
             self.min_planets_entry.bind("<KeyRelease>", self.validate_min_planets)
@@ -135,55 +293,42 @@ def openSettings():
                 self.min_moons_var.set(value[:-1])
 
         def apply_settings(self):
-            # Save settings to file
+            def get_star_type_value(selection):
+                mapping = {
+                    "Red Giant (0–18)": 0,
+                    "White Dwarf (19–28)": 19,
+                    "Neutron Star (29–39)": 29,
+                    "Brown Dwarf (40–50)": 40,
+                    "Wolf-Rayet (51–55)": 51,
+                    "Main Sequence (56–175)": 56
+                }
+                return mapping.get(selection, None)
+
             try:
                 minPlanets = int(self.min_planets_var.get())
             except ValueError:
-                minPlanets = 0
+                minPlanets = Settings.minPlanets
             try:
                 minMoons = int(self.min_moons_var.get())
             except ValueError:
-                minMoons = 0
+                minMoons = Settings.minMoons
 
             new_settings = {
-                "useMultithreading": (
-                    str(self.use_multithread_var.get()),
-                    "# Will use multithreading, this will drastically increase generator efficiency and thus result in faster generation, but may increase CPU usage."
-                ),
-                "convertTexturesToDDS": (
-                    str(self.convert_dds_var.get()),
-                    "# Will remove the requirement for ImageMagick and reduce generator time if false. Will also increase KSP loading time so setting to false is not recommended."
-                ),
-                "fantasyNames": (
-                    str(self.fantasy_names_var.get()),
-                    "# Generate a fantasy name for bodies. Will not affect internal names!"
-                ),
-                "minPlanets": (
-                    str(minPlanets),
-                    "# Minimum number of planets per star."
-                ),
-                "minMoons": (
-                    str(minMoons),
-                    "# Minimum number of moons per star."
-                )
+                "useMultithreading": self.use_multithread_var.get(),
+                "convertTexturesToDDS": self.convert_dds_var.get(),
+                "fantasyNames": self.fantasy_names_var.get(),
+                "minPlanets": minPlanets,
+                "minMoons": minMoons,
+                "binaryOverride": None if self.binary_override_var.get() == "Default (random)" else self.binary_override_var.get(),
+                "binaryTypeOverride": None if self.binary_type_override_var.get() == "Default (random)" else self.binary_type_override_var.get(),
+                "starTypeOverride": None if self.star_type_override_var.get() == "Default (random)" else get_star_type_value(self.star_type_override_var.get()),
+                "starTypeOverrideBinary1": None if self.star_type_override_b1_var.get() == "Default (random)" else get_star_type_value(self.star_type_override_b1_var.get()),
+                "starTypeOverrideBinary2": None if self.star_type_override_b2_var.get() == "Default (random)" else get_star_type_value(self.star_type_override_b2_var.get()),
+                "binaryBrightnessMultiplier": float(self.binary_brightness_multiplier_var.get()) if self.binary_brightness_multiplier_var.get() else Settings.binaryBrightnessMultiplier
             }
 
-            updated_keys = set()
-
-            for i, line in enumerate(settingsData):
-                for key, (value, comment) in new_settings.items():
-                    if line.strip().startswith(key + " ="):
-                        settingsData[i] = f"{key} = {value} {comment}\n"
-                        updated_keys.add(key)
-                        break
-
-            # Append missing keys
-            for key, (value, comment) in new_settings.items():
-                if key not in updated_keys:
-                    settingsData.append(f"{key} = {value} {comment}\n")
-
-            with open("Settings.py", "w") as settingsFile:
-                settingsFile.writelines(settingsData)
+            save_user_settings(new_settings)
+            state.settings = new_settings
             print("Settings applied.")
             self.after(100, self.destroy)
 
@@ -278,7 +423,7 @@ class DeleteWindow(ctk.CTk):
                 self.after(2000, self.reset_all_button)
 
 class MainUI(ctk.CTk):
-    def __init__(self, targetPath, Settings, startLoop, allActions, allThreads, mainThreadFinished, amountOfThingsDone, amountOfThingsToDo):
+    def __init__(self, targetPath, startLoop, allActions, allThreads, mainThreadFinished, amountOfThingsDone, amountOfThingsToDo):
         super().__init__()
         self.wm_attributes("-type", "splash") if os.name != 'nt' else self.overrideredirect(True)
         self.option_add('*tearOff', False)
@@ -289,7 +434,7 @@ class MainUI(ctk.CTk):
         self.configure(bg="#1f1f1f")
         self.amountValues = [1, 5, 4, 2]
         self.targetPath = targetPath
-        self.Settings = Settings
+        state.settings = load_user_settings()
         self.startLoop = startLoop
         self.allActions = allActions
         self.allThreads = allThreads
@@ -556,6 +701,9 @@ class MainUI(ctk.CTk):
             asteroidAmount = int(self.asteroid_var.get())
         except:
             return
+        
+        state.settings = load_user_settings()
+
         self.currentFocusText.configure(text="Generator is active.")
         # Only disable button, do not set text here (let update_stats_loop manage text)
         self.start_button.configure(state="disabled")
@@ -598,7 +746,7 @@ class MainUI(ctk.CTk):
             asteroidAmount = 0
 
         # Estimated time
-        if self.Settings.useMultithreading:
+        if state.settings["useMultithreading"]:
             estTime = (((planetAmount * moonAmount * asteroidAmount) * starAmount) * 15) / 6.17
         else:
             estTime = ((planetAmount * moonAmount * asteroidAmount) * starAmount) * 15

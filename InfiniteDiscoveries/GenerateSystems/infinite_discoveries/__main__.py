@@ -1,6 +1,6 @@
 import os
 import shutil
-from . import state, Settings
+from . import state
 from ._version import __version__
 
 from pathlib import Path
@@ -50,15 +50,7 @@ from matplotlib.colors import to_hex
 
 targetPath = ""
 
-if Settings.convertTexturesToDDS == True:
-    try:
-        from wand import image as wImage
-        canConvertToDDS = True
-    except:
-        print("ImageMagick is not installed, install it from: https://docs.wand-py.org/en/latest/guide/install.html#install-imagemagick-on-windows")
-        canConvertToDDS = False
-else:
-    canConvertToDDS = False
+canConvertToDDS = False
 
 from .nameGen import processName, getTables
 from .templateGens import generateNebula, generateSuperheatedClouds, generateWRBinarySpiral
@@ -277,7 +269,7 @@ def generateMoon(planetSeed, moonNum, parentPlanet, moonsGenerated, parentRadius
     sctrClrG = (atmClrG*-1)+255
     sctrClrB = (atmClrB*-1)+255
 
-    if Settings.fantasyNames == True:
+    if state.settings['fantasyNames'] == True:
         if atmo == "Atmospheric":
             if finalTemp > 600:
                 dispName = processName(moonSeed, lavaTransisionTable)
@@ -729,7 +721,7 @@ def generate(seedThing,starN,starRadius,starMass,starColor,atmoCfg,listCfg,color
     sctrClrG = (atmClrG*-1)+255
     sctrClrB = (atmClrB*-1)+255
 
-    if Settings.fantasyNames == True:
+    if state.settings["fantasyNames"] == True:
         if atmo == "Atmospheric":
             if finalTemp > 600:
                 dispName = processName(planetSeed,lavaTransisionTable)
@@ -1040,11 +1032,11 @@ def generateStar(starSeed, AmountOfPlanetsToGenerate, systemName, targetFilepath
     if parentBarycenter == None:
         totalSystemsGenerated = totalSystemsGenerated + 1
         parentGalaxy = availableGalaxies[starGenRNG.randint(0,len(availableGalaxies)-1)]
-        if Settings.starTypeOverride == None:
+        if state.settings['starTypeOverride'] == None:
             typeOfStar = starGenRNG.randint(0,175)
         else:
             try:
-                typeOfStar = Settings.starTypeOverride
+                typeOfStar = state.settings['starTypeOverride']
             except:
                 print('Incredible star type override failue, check if it is "None" or a number.')
                 typeOfStar = starGenRNG.randint(0,175)
@@ -1086,8 +1078,8 @@ def generateStar(starSeed, AmountOfPlanetsToGenerate, systemName, targetFilepath
                     Tag = "InfD_DistantBinaryStar"
                 else:
                     Tag = "InfD_BinaryStar"
-            minStarSize = Settings.minStarSize
-            maxStarSize = Settings.maxStarSize
+            minStarSize = state.settings['minStarSize']
+            maxStarSize = state.settings['maxStarSize']
 
             if binaryRad == None:
                 randomSizeType = starGenRNG.randint(1,3)
@@ -1158,8 +1150,8 @@ def generateStar(starSeed, AmountOfPlanetsToGenerate, systemName, targetFilepath
                     Tag = "InfD_DistantBinaryWolfRayet"
                 else:
                     Tag = "InfD_BinaryWolfRayet"
-            minStarSize = 130800000 #Settings.minStarSize
-            maxStarSize = 6016800000 #Settings.maxStarSize
+            minStarSize = 130800000 
+            maxStarSize = 6016800000 
 
             if binaryRad == None:
                 starRadius =  int(math.floor(abs(starGenRNG.random() - starGenRNG.random()) * (10 + maxStarSize - minStarSize) + minStarSize))
@@ -1254,8 +1246,8 @@ def generateStar(starSeed, AmountOfPlanetsToGenerate, systemName, targetFilepath
                     Tag = "InfD_DistantBinaryNeutronStar"
                 else:
                     Tag = "InfD_BinaryNeutronStar"
-            minStarSize = Settings.minStarSize
-            maxStarSize = Settings.maxStarSize
+            minStarSize = state.settings['minStarSize']
+            maxStarSize = state.settings['maxStarSize']
 
             if binaryRad == None:
                 starRadius =  48000
@@ -1318,13 +1310,13 @@ def generateStar(starSeed, AmountOfPlanetsToGenerate, systemName, targetFilepath
 
     # Not type-specific settings.
     if parentBarycenter == None:
-        starDist = starGenRNG.randint(Settings.minStarDistance,Settings.maxStarDistance)
+        starDist = starGenRNG.randint(state.settings['minStarDistance'], state.settings['maxStarDistance'])
         if parentGalaxy == "LKC_CtrlB":
-            starDistG = round(starGenRNG.randint(Settings.minStarDistance // 5, Settings.maxStarDistance * 10) / 3.5)
+            starDistG = round(starGenRNG.randint(state.settings['minStarDistance'] // 5, state.settings['maxStarDistance'] * 10) / 3.5)
         elif parentGalaxy == "SKC_CtrlB":
-            starDistG = round(starGenRNG.randint(Settings.minStarDistance // 5, Settings.maxStarDistance * 10) / 11)
+            starDistG = round(starGenRNG.randint(state.settings['minStarDistance'] // 5, state.settings['maxStarDistance'] * 10) / 11)
         else:
-            starDistG = starGenRNG.randint(Settings.minStarDistance // 5, Settings.maxStarDistance * 10)
+            starDistG = starGenRNG.randint(state.settings['minStarDistance'] // 5, state.settings['maxStarDistance'] * 10)
     else:
         starDist = binarySMA
         starDistG = binarySMA
@@ -1420,7 +1412,7 @@ def generateStar(starSeed, AmountOfPlanetsToGenerate, systemName, targetFilepath
                     raise Exception("UI thread isn't running.")
                 print("wowowowowowowowoooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooohohohohohohohohololololooleeeeheeeeee")
                 planetsGenerated = planetsGenerated + 1
-                if Settings.useMultithreading == True:
+                if state.settings["useMultithreading"] == True:
                     generatePlanetProcess = threading.Thread(target=generate, args=(starSeed,starName,starRadius,starMass,starColor,atmoCfg,listCfg,colorsRound,oceanCfg,eveCfg,VolumetricEveCfg,Lum,parallaxCfg,parallax_subd_Cfg,parallax_scatterfix_Cfg,parallax_scatter_Cfg,evePQSCfg,rationalResources_Cfg,starTypeStr,x+1,None,None,None,None,distBinaryParents,baryOrder), daemon=True)
                     allThreads.append(generatePlanetProcess)
                     allActions.append([time.localtime(),"Starting thread: " + str(generatePlanetProcess)])
@@ -1436,7 +1428,7 @@ def generateStar(starSeed, AmountOfPlanetsToGenerate, systemName, targetFilepath
                 if everythingEnded == True:
                     raise Exception("UI thread isn't running.")
                 planetsGenerated = planetsGenerated + 1
-                if Settings.useMultithreading == True:
+                if state.settings["useMultithreading"]:
                     generatePlanetProcess = threading.Thread(target=generate, args=(starSeed,starName,starRadius,starMass,starColor,atmoCfg,listCfg,colorsRound,oceanCfg,eveCfg,VolumetricEveCfg,Lum,parallaxCfg,parallax_subd_Cfg,parallax_scatterfix_Cfg,parallax_scatter_Cfg,evePQSCfg,rationalResources_Cfg,starTypeStr,x+1), daemon=True)
                     allThreads.append(generatePlanetProcess)
                     allActions.append([time.localtime(),"Starting thread: " + str(generatePlanetProcess)])
@@ -1495,11 +1487,11 @@ def generateBarycenter(starSeed, AmountOfPlanetsToGenerate, targetFilepath):
     print(str(starSeed) + " <-------------- barycenter seed thing")
     randomfucker = baryGenRNG.randint(1,2)
     print(randomfucker)
-    if Settings.binaryTypeOverride == None:
+    if state.settings["binaryTypeOverride"] == None:
         binaryType = baryGenRNG.choice(["Near","Distant"])
-    elif Settings.binaryTypeOverride == True:
+    elif state.settings["binaryTypeOverride"] == True:
         binaryType = "Distant"
-    elif Settings.binaryTypeOverride == False:
+    elif state.settings["binaryTypeOverride"] == False:
         binaryType = "Near"
     else:
         binaryType = baryGenRNG.choice(["Near","Distant"])
@@ -1513,8 +1505,8 @@ def generateBarycenter(starSeed, AmountOfPlanetsToGenerate, targetFilepath):
 
     parentGalaxy = availableGalaxies[baryGenRNG.randint(0,len(availableGalaxies)-1)]
 
-    minStarSize = Settings.minStarSize
-    maxStarSize = Settings.maxStarSize
+    minStarSize = state.settings["minStarSize"]
+    maxStarSize = state.settings["maxStarSize"]
 
     star1Radius = baryGenRNG.randint(392400000,784800000)
     star1Mass = star1Radius * 6.7146251e+19
@@ -1524,13 +1516,13 @@ def generateBarycenter(starSeed, AmountOfPlanetsToGenerate, targetFilepath):
 
     totalSystemsGenerated = totalSystemsGenerated + 1
 
-    if Settings.starTypeOverrideBinary1 == None:
+    if state.settings["starTypeOverrideBinary1"] == None:
         if binaryType == "Near":
             typeOfStar1 = baryGenRNG.randint(19,175)
         elif binaryType == "Distant":
             typeOfStar1 = baryGenRNG.randint(0,175)
     else:
-        typeOfStar1 = Settings.starTypeOverrideBinary1
+        typeOfStar1 = state.settings["starTypeOverrideBinary1"]
     print(typeOfStar1)
     if 0 <= typeOfStar1 <= 18:
         redGiant1 = True
@@ -1545,13 +1537,13 @@ def generateBarycenter(starSeed, AmountOfPlanetsToGenerate, targetFilepath):
     else:
         mainSeq1 = True
 
-    if Settings.starTypeOverrideBinary2 == None:
+    if state.settings["starTypeOverrideBinary2"] == None:
         if binaryType == "Near":
             typeOfStar2 = baryGenRNG.randint(19,175)
         elif binaryType == "Distant":
             typeOfStar2 = baryGenRNG.randint(0,175)
     else:
-        typeOfStar2 = Settings.starTypeOverrideBinary2
+        typeOfStar2 = state.settings["starTypeOverrideBinary2"]
     if 0 <= typeOfStar2 <= 18:
         redGiant2 = True
     elif 19 <= typeOfStar2 <= 28:
@@ -1708,13 +1700,13 @@ def generateBarycenter(starSeed, AmountOfPlanetsToGenerate, targetFilepath):
     barycenterMass = star1Mass + star2Mass
     barycenterRadius = largerStarRadius
     distanceThingamabob = largerDistance
-    barycenterDist = baryGenRNG.randint(Settings.minStarDistance,Settings.maxStarDistance)
+    barycenterDist = baryGenRNG.randint(state.settings['minStarDistance'],state.settings['maxStarDistance'])
     if parentGalaxy == "LKC_CtrlB":
-        barycenterDistG = baryGenRNG.randint(Settings.minStarDistance//5,Settings.maxStarDistance*10)/3.5
+        barycenterDistG = baryGenRNG.randint(state.settings['minStarDistance']//5,state.settings['maxStarDistance']*10)/3.5
     elif parentGalaxy == "SKC_CtrlB":
-        barycenterDistG = baryGenRNG.randint(Settings.minStarDistance//5,Settings.maxStarDistance*10)/11
+        barycenterDistG = baryGenRNG.randint(state.settings['minStarDistance']//5,state.settings['maxStarDistance']*10)/11
     else:
-        barycenterDistG = baryGenRNG.randint(Settings.minStarDistance//5,Settings.maxStarDistance*10)
+        barycenterDistG = baryGenRNG.randint(state.settings['minStarDistance']//5,state.settings['maxStarDistance']*10)
     if star1Mass > star2Mass:
         ML = star1Mass # Larger object mass.
         MS = star2Mass # Smaller object mass.
@@ -1736,14 +1728,14 @@ def generateBarycenter(starSeed, AmountOfPlanetsToGenerate, targetFilepath):
 
     if neutronInSystem == True:
         if binaryType == "Near":
-            gSMA = int(baryGenRNG.randint(Settings.binaryMinSMA + 50000000, Settings.binaryMaxSMA) + ((star1Radius + star2Radius)/2)) # Distance between both bodies in meters.
+            gSMA = int(baryGenRNG.randint(state.settings['binaryMinSMA'] + 50000000, state.settings['binaryMaxSMA']) + ((star1Radius + star2Radius)/2)) # Distance between both bodies in meters.
         else:
-            gSMA = int(baryGenRNG.randint(Settings.distantBinaryMinSMA,Settings.distantBinaryMaxSMA))
+            gSMA = int(baryGenRNG.randint(state.settings['distantBinaryMinSMA'], state.settings['distantBinaryMaxSMA']))
     else:
         if binaryType == "Near":
-            gSMA = int(baryGenRNG.randint(Settings.binaryMinSMA,Settings.binaryMaxSMA) + ((star1Radius + star2Radius)/2)) # Distance between both bodies in meters.
+            gSMA = int(baryGenRNG.randint(state.settings['binaryMinSMA'], state.settings['binaryMaxSMA']) + ((star1Radius + star2Radius)/2)) # Distance between both bodies in meters.
         else:
-            gSMA = int(baryGenRNG.randint(Settings.distantBinaryMinSMA,Settings.distantBinaryMaxSMA))
+            gSMA = int(baryGenRNG.randint(state.settings['distantBinaryMinSMA'], state.settings['distantBinaryMaxSMA']))
 
     print(gSMA)
     diff = ML/MS
@@ -1921,7 +1913,9 @@ def generateBarycenter(starSeed, AmountOfPlanetsToGenerate, targetFilepath):
     colorsRound2 = (star2Color[0] + star2Color[1] + star2Color[2])/3
     colorsRound = colorsRound1 + colorsRound2
 
-    Lum = (Lum1 + Lum2)/2
+    # Apply brightness reduction only for binary star systems
+    # Avoids ultra bright binary star systems saturating close planets
+    Lum = ((Lum1 + Lum2) / 2) * state.settings['binaryBrightnessMultiplier']
 
     sunfCfg = open(targetPath + "/Visuals/Scatterer/" + systemName + "_ScattererSunflare" + ".cfg","x")
     addSunflareCfg(sunfCfg, star1Color, star1Name, starTypeStr1)
@@ -1934,7 +1928,7 @@ def generateBarycenter(starSeed, AmountOfPlanetsToGenerate, targetFilepath):
                 raise Exception("UI thread isn't running.")
             #print("wowowowowowowowoooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooohohohohohohohohololololooleeeeheeeeee")
             planetsGenerated = planetsGenerated + 1
-            if Settings.useMultithreading == True:
+            if state.settings['useMultithreading']:
                 generatePlanetProcess = threading.Thread(target=generate, args=(starSeed,systemName,barycenterRadius,barycenterMass,star1Color,atmoCfg,listCfg,colorsRound,oceanCfg,eveCfg,VolumetricEveCfg,Lum,parallaxCfg,parallax_subd_Cfg,parallax_scatterfix_Cfg,parallax_scatter_Cfg,evePQSCfg,rationalResources_Cfg,starTypeStr1,x+1,binaryParents,binaryTypes,gSMA,distanceThingamabob), daemon=True)
                 allThreads.append(generatePlanetProcess)
                 allActions.append([time.localtime(),"Starting thread: " + str(generatePlanetProcess)])
@@ -2000,7 +1994,7 @@ loopProcess = None
 def systemLoop(starAmnt, planetAmnt, moonAmnt, asteroidAmnt, targetFilepath, customSeed=None, overrideValues=None):
     print("Custom seed: " + str(customSeed))
     print(multiprocessing.current_process())
-    importlib.reload(Settings)
+
     os.makedirs(targetFilepath + "/InfiniteDiscoveries", exist_ok=True)
     allActions.append([time.localtime(),"Creating Directory"])
     os.makedirs(targetFilepath + "/InfiniteDiscoveries/Configs", exist_ok=True)
@@ -2058,8 +2052,8 @@ def systemLoop(starAmnt, planetAmnt, moonAmnt, asteroidAmnt, targetFilepath, cus
         AmountOfPlanetsToGenerate = planetAmnt
         AmountOfMoonsToGenerate = moonAmnt
         AmountOfAsteroidsToGenerate = asteroidAmnt
-        minPlanets = Settings.minPlanets
-        minMoons = Settings.minMoons
+        minPlanets = state.settings["minPlanets"]
+        minMoons = state.settings["minMoons"]
     else:
         #AmountOfPlanetsToGenerate = overrideValues[0]
         #AmountOfMoonsToGenerate = overrideValues[1]
@@ -2093,18 +2087,18 @@ def systemLoop(starAmnt, planetAmnt, moonAmnt, asteroidAmnt, targetFilepath, cus
                 gloablSeed = generatorSeed
         starChoiceRNG.seed(generatorSeed)
         starSeed = generatorSeed
-        if Settings.binaryOverride == None:
+        if state.settings["binaryOverride"] == None:
             binaryChoice = starChoiceRNG.randint(0,1)
-        elif Settings.binaryOverride == True:
+        elif state.settings["binaryOverride"]:
             binaryChoice = 0
-        elif Settings.binaryOverride == False:
+        elif not state.settings["binaryOverride"]:
             binaryChoice = 1
         else:
             print("epic binary override fail")
             binaryChoice = starChoiceRNG.randint(0,1)
         if binaryChoice == 0:
             barycenter = True
-            if Settings.useMultithreading == True:
+            if state.settings["useMultithreading"]:
                 generateBarycenterProcess = threading.Thread(target=generateBarycenter, args=(starSeed, AmountOfPlanetsToGenerate, targetPath), daemon=True)
                 allThreads.append(generateBarycenterProcess)
                 generateBarycenterProcess.start()
@@ -2112,7 +2106,7 @@ def systemLoop(starAmnt, planetAmnt, moonAmnt, asteroidAmnt, targetFilepath, cus
                 generateBarycenter(starSeed, AmountOfPlanetsToGenerate, targetPath)
         else:
             barycenter = False
-            if Settings.useMultithreading == True:
+            if state.settings["useMultithreading"]:
                 generateStarProcess = threading.Thread(target=generateStar, args=(starSeed, AmountOfPlanetsToGenerate, barycenter, targetPath), daemon=True)
                 allThreads.append(generateStarProcess)
                 generateStarProcess.start()
@@ -2140,7 +2134,18 @@ def waitForThreadsToFinish(mainThread, idk):
     state.allActionArrayUpdated = True
 
 def startLoop(starAm,planetAm,moonAM,asteroidAM,targetPath,customSeed=None,overrides=None):
-    global loopProcess
+    global loopProcess, canConvertToDDS
+
+    if state.settings['convertTexturesToDDS'] == True:
+        try:
+            from wand import image as wImage
+            canConvertToDDS = True
+        except:
+            print("ImageMagick is not installed, install it from: https://docs.wand-py.org/en/0.6.7/guide/install.html")
+            canConvertToDDS = False
+    else:
+        canConvertToDDS = False
+    
     loopProcess = threading.Thread(target=systemLoop, args=(starAm,planetAm,moonAM,asteroidAM,targetPath,customSeed,overrides), daemon=True)
     allThreads.append(loopProcess)
     allActions.append([time.localtime(),"Starting thread: " + str(loopProcess)])
@@ -2156,7 +2161,6 @@ def main():
     from .ui import MainUI
     app = MainUI(
         targetPath=targetPath,
-        Settings=Settings,
         startLoop=startLoop,
         allActions=allActions,
         allThreads=allThreads,

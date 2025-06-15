@@ -28,6 +28,12 @@ starTypeOverride = None # Will override the type of non-binary stars.
 starTypeOverrideBinary1 = None # Will override the type of the first binary star.
 starTypeOverrideBinary2 = None # Will override the type of the second binary star.
 
+# Luminosity multiplier for binaries. Used to prevent binary stars from being too bright.
+binaryBrightnessMultiplier = 0.65
+
+# Use the stock Kerbol system and add planets/moons only, no stars
+useStockSystem = False # To be implemented
+
 # Star type guide:
 # A value between any of these will generate the corresponding star ONLY.
 # 0 - 18: Red Giant
