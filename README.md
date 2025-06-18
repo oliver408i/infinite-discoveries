@@ -44,6 +44,8 @@ This is a fork of the [original script](https://github.com/Sushutt/Infinite-Disc
 - Python 3 (Tested on python3.13)
 - MagickWand (follow [this](https://docs.wand-py.org/en/0.6.7/guide/install.html). Ignore the `pip install` command here)
 - Kopernicus (and deps)
+- Kopernicus Expansion (for wormholes)
+- Singularity (for wormholes)
 - EVE & Scatterer (optional visuals)
 - Parallax (optional ground scatters)
 - SigmaLoadingScreens (optional visuals)
