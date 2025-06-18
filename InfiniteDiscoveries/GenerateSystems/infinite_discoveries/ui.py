@@ -463,6 +463,13 @@ class MainUI(ctk.CTk):
             return {}
 
         cache = load_cache()
+        cached_version = cache.get("version")
+        if cached_version != __version__:
+            # Clear assets directory if version has changed or is missing
+            if ASSETS_DIR.exists():
+                shutil.rmtree(ASSETS_DIR)
+                ASSETS_DIR.mkdir(exist_ok=True)
+            cache["version"] = __version__
 
         # File log
         self.ActionLog = open(state.base_dir / "ActionLog.txt", "a")
@@ -871,7 +878,8 @@ class MainUI(ctk.CTk):
             "asteroids": self.asteroid_var.get(),
             "seed": self.seed_var.get(),
             "path": self.directory_var.get(),
-            "systemType": self.system_type_var.get()
+            "systemType": self.system_type_var.get(),
+            "version": __version__
         }
         try:
             with open(CACHE_FILE, "w") as f:
