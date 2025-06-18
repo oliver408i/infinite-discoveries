@@ -89,7 +89,7 @@ allPlanets = []
 wormholeList = []
 
 # !!!!! THE GLOBAL SEED!!! THIS IS VERY IMPORTANT !!!!!!
-gloablSeed = 42
+globalSeed = 42
 
 # Gets star color multiplier I guess
 def getStarColorMult(radi):
@@ -118,7 +118,7 @@ from .generateMaps import generateGasGiantMaps, generatePlanetMaps
 
 # Picks parameters for a moon.
 def generateMoon(planetSeed, moonNum, parentPlanet, moonsGenerated, parentRadius, gasGiantP, atmoCfg, starN, starColor, listCfg, colorsRound, oceanCfg, eveCfg, VolumetricEveCfg, Lum, parentSMA, starRadius, parallaxCfg, subdfixCfg, parallax_scatterfix_Cfg, parallax_scatter_Cfg, rationalResources_Cfg, moonDistMult, isAsteroid, binaryParents=None, distBinaryParents=None,distBinaryStarNum=None):
-    global gloablSeed
+    global globalSeed
     
     #global amountOfThingsToDo
     #global amountOfThingsDone
@@ -557,7 +557,6 @@ def generate(seedThing,starN,starRadius,starMass,starColor,atmoCfg,listCfg,color
     else:
         if not gSMA == None:
             planetSMA = int(((planetRNG.randint(4500000000,5500000000)*currentPlanetNum)*(distanceThingamabob/261600000))+gSMA)
-            print("AYUAGYUGHYURHYGURSYUGHSREHUYSRGHYUIRSHYUGHYUSRGHUYRGSUHYGRSUYRHSGUYHGYU*IRSHYURGHYURGHYUR BALLS BVALLB BALLS BALLS BALL WR WR WR WR AHHHH")
         else:
             planetSMA = int(((planetRNG.randint(4500000000,5500000000)*currentPlanetNum)*(starRadius/261600000)))
 
@@ -1474,7 +1473,7 @@ def generateStar(starSeed, AmountOfPlanetsToGenerate, systemName, targetFilepath
     return starColor, starName, dispName, Lum, starTypeStr
 # Picks parameters for a barycenter. Influences star generation.
 def generateBarycenter(starSeed, AmountOfPlanetsToGenerate, targetFilepath):
-    global gloablSeed
+    global globalSeed
     global targetPath
     targetPath = targetFilepath
     global totalSystemsGenerated
@@ -1993,6 +1992,7 @@ loopProcess = None
 
 def systemLoop(starAmnt, planetAmnt, moonAmnt, asteroidAmnt, targetFilepath, customSeed=None, overrideValues=None):
     print("Custom seed: " + str(customSeed))
+    print("Using settings: " + str(state.settings))
     print(multiprocessing.current_process())
 
     os.makedirs(targetFilepath + "/InfiniteDiscoveries", exist_ok=True)
@@ -2076,15 +2076,15 @@ def systemLoop(starAmnt, planetAmnt, moonAmnt, asteroidAmnt, targetFilepath, cus
         starChoiceRNG = random.Random()
         if customSeed == None:
             generatorSeed = randomSeedRNG.randint(0,(2**32)-1)
-            global gloablSeed
-            gloablSeed = generatorSeed
+            global globalSeed
+            globalSeed = generatorSeed
         else:
             if int(customSeed) >= 0:
                 generatorSeed = int(customSeed)
-                gloablSeed = generatorSeed
+                globalSeed = generatorSeed
             else:
                 generatorSeed = int(0)
-                gloablSeed = generatorSeed
+                globalSeed = generatorSeed
         starChoiceRNG.seed(generatorSeed)
         starSeed = generatorSeed
         if state.settings["binaryOverride"] == None:
@@ -2123,12 +2123,16 @@ def waitForThreadsToFinish(mainThread, idk):
         nextThread = allThreads[i+1] if i < len(allThreads)-1 else None
         print("--- Waiting for next thread: " + str(nextThread))
         thread.join()
+    
+
+    if "wormhole" in state.settings['systemType'].lower():
+        allActions.append([time.localtime(),"Generating wormholes..."])
+        state.allActionArrayUpdated = True
+
+        generateWormholes(globalSeed, alphabet, targetPath, allPlanets, StarAmount)
+
     global mainThreadFinished
     mainThreadFinished = True
-    allActions.append([time.localtime(),"Generating wormholes..."])
-    state.allActionArrayUpdated = True
-
-    #generateWormholes()
 
     allActions.append([time.localtime(),"Finished generation."])
     state.allActionArrayUpdated = True

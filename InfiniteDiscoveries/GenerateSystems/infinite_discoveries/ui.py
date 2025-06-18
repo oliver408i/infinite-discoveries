@@ -430,7 +430,7 @@ class MainUI(ctk.CTk):
         self.config(menu=tk.Menu(self))  # Empty menu
         self.title("Infinite Discoveries " + __version__)
         self.geometry("800x500")
-        self.minsize(700, 500)
+        self.minsize(900, 600)
         self.configure(bg="#1f1f1f")
         self.amountValues = [1, 5, 4, 2]
         self.targetPath = targetPath
@@ -514,6 +514,43 @@ class MainUI(ctk.CTk):
         self.amount_desc = ctk.CTkLabel(self.input_frame, text=textwrap.fill(startAmountDescText, 49), wraplength=350, justify="left", text_color="#ffffff")
         self.amount_desc.pack(fill="x", padx=10, pady=(20, 10))
 
+        # System type dropdown
+        self.system_type_var = ctk.StringVar(value=state.settings.get("systemType", "Interstellar"))
+        self.system_type_label = ctk.CTkLabel(self.input_frame, text="System Type", text_color="#ffffff")
+        self.system_type_label.pack(padx=10, pady=(5, 0), anchor="w")
+        self.system_type_dropdown = ctk.CTkOptionMenu(
+            self.input_frame,
+            values=["Interstellar", "Interstellar + Wormholes"],
+            variable=self.system_type_var
+        )
+        self.system_type_dropdown.pack(padx=10, pady=(0, 5), anchor="w")
+        # Description with styled font
+        regular_font = ctk.CTkFont(size=11)
+        bold_font = ctk.CTkFont(size=11, weight="bold")
+
+        self.system_type_desc_frame = ctk.CTkFrame(self.input_frame, fg_color="transparent")
+        self.system_type_desc_frame.pack(padx=10, pady=(0, 1), anchor="w")
+
+        ctk.CTkLabel(
+            self.system_type_desc_frame,
+            text="Interstellar: The classic planet pack system with planets around new stars",
+            font=regular_font,
+            text_color="#ffffff"
+        ).pack(anchor="w", pady=0)
+
+        ctk.CTkLabel(
+            self.system_type_desc_frame,
+            text="Interstellar + Wormholes: Makes wormholes between the stock planets and generated planets",
+            font=regular_font,
+            text_color="#ffffff"
+        ).pack(anchor="w", pady=0)
+
+        ctk.CTkLabel(
+            self.system_type_desc_frame,
+            text="[Coming soon] Kerbol System: Adds new planets and moons to the stock system, like OPM. No stars",
+            font=regular_font,
+            text_color="#888888"
+        ).pack(anchor="w", pady=0)
         # Directory selection
         self.directory_var = ctk.StringVar(value=cache.get("path", targetPath))
         # Simulate user selection of cached directory
@@ -525,50 +562,42 @@ class MainUI(ctk.CTk):
         self.dir_button.pack(padx=10, pady=(0, 5), side="left")
 
         # Access info
-        self.okToAccess = ctk.CTkLabel(self.input_frame, text="To write or not to write? That is the question.", text_color="#ffffff")
-        self.okToAccess.pack(fill="x", padx=10, pady=(0, 5))
-
+        self.okToAccess = ctk.CTkLabel(self.output_frame, text="To write or not to write? That is the question.", text_color="#ffffff")
         # Estimated time
-        self.est_time_text = ctk.CTkLabel(self.input_frame, text="Estimated Generator Time: 26.25 minutes.", text_color="#ffffff")
-        self.est_time_text.pack(fill="x", padx=10, pady=(0, 5))
-
+        self.est_time_text = ctk.CTkLabel(self.output_frame, text="Estimated Generator Time: 26.25 minutes.", text_color="#ffffff")
         # Start button
-        self.start_button = ctk.CTkButton(self.input_frame, text="Start Generator", command=self.start_generator, text_color="#ffffff")
-        self.start_button.pack(fill="x", padx=10, pady=(0, 5))
+        self.start_button = ctk.CTkButton(self.output_frame, text="Start Generator", command=self.start_generator, text_color="#ffffff")
         self.check_and_download_assets()
-
         # Stats frame
-        self.stats_frame = ctk.CTkFrame(self.input_frame)
-        self.stats_frame.pack(fill="x", padx=10, pady=(0, 5))
+        self.stats_frame = ctk.CTkFrame(self.output_frame)
         self.stats_system_amount = ctk.CTkLabel(self.stats_frame, text="Amount of systems: ????", text_color="#ffffff")
         self.stats_system_amount.pack(fill="x")
         self.stats_config_amount = ctk.CTkLabel(self.stats_frame, text="Amount of configs: ????", text_color="#ffffff")
         self.stats_config_amount.pack(fill="x")
         self.stats_texture_amount = ctk.CTkLabel(self.stats_frame, text="Amount of textures: ????", text_color="#ffffff")
         self.stats_texture_amount.pack(fill="x")
-
         # Seed input
         self.seed_var = ctk.StringVar(value=cache.get("seed", ""))
-        self.seed_frame = ctk.CTkFrame(self.input_frame)
-        self.seed_frame.pack(fill="x", padx=10, pady=(0, 5))
+        self.seed_frame = ctk.CTkFrame(self.output_frame)
         self.seed_entry = ctk.CTkEntry(self.seed_frame, textvariable=self.seed_var, width=120, text_color="#ffffff", fg_color="transparent")
         self.seed_entry.pack(side="left", padx=5)
         self.seed_label = ctk.CTkLabel(self.seed_frame, text="Custom Seed", text_color="#ffffff")
         self.seed_label.pack(side="left", padx=5)
         self.seed_entry.bind("<KeyRelease>", self.handle_seed_input)
-
         # Settings, Delete buttons
-        self.buttons_frame = ctk.CTkFrame(self.input_frame)
-        self.buttons_frame.pack(fill="x", padx=10, pady=(0, 20))
+        self.buttons_frame = ctk.CTkFrame(self.output_frame)
         self.settings_button = ctk.CTkButton(self.buttons_frame, text="Settings", command=openSettings, text_color="#ffffff")
         self.settings_button.pack(side="left", padx=10)
         self.delete_button = ctk.CTkButton(self.buttons_frame, text="Delete", command=lambda: DeleteWindow(self.targetPath).mainloop(), text_color="#ffffff")
         self.delete_button.pack(side="left", padx=10)
         # Output frame
-        self.currentFocusText = ctk.CTkLabel(self.output_frame, text="Generator is not currently running.", text_color="#ffffff")
-        self.currentFocusText.pack(fill="x", pady=(10, 2))
-        self.currentActionText = ctk.CTkTextbox(self.output_frame, fg_color="#2a2a2a", text_color="#ffffff", height=320)
-        self.currentActionText.pack(fill="both", expand=True, padx=10, pady=5)
+        # Place moved widgets under output_frame, after currentActionText
+        self.okToAccess.pack(fill="x", padx=10, pady=(0, 5))
+        self.est_time_text.pack(fill="x", padx=10, pady=(0, 5))
+        self.start_button.pack(fill="x", padx=10, pady=(0, 5))
+        self.stats_frame.pack(fill="x", padx=10, pady=(0, 5))
+        self.seed_frame.pack(fill="x", padx=10, pady=(0, 5))
+        self.buttons_frame.pack(fill="x", padx=10, pady=(0, 20))
 
         # Bindings for input validation
         self.star_entry.bind("<KeyRelease>", self.validate_star)
@@ -694,6 +723,12 @@ class MainUI(ctk.CTk):
         self.asteroid_var.set(str(self.amountValues[3]))
 
     def start_generator(self):
+        # Prompt if InfiniteDiscoveries directory exists
+        existing_dir = os.path.join(self.targetPath, "InfiniteDiscoveries")
+        if os.path.exists(existing_dir):
+            proceed = mb.askyesno("Directory Exists", f"The folder '{existing_dir}' already exists.\nContinuing may have unexpected results and/or cause errors with the generator. Proceed?")
+            if not proceed:
+                return
         try:
             starAmount = int(self.star_var.get())
             planetAmount = int(self.planet_var.get())
@@ -704,7 +739,6 @@ class MainUI(ctk.CTk):
         
         state.settings = load_user_settings()
 
-        self.currentFocusText.configure(text="Generator is active.")
         # Only disable button, do not set text here (let update_stats_loop manage text)
         self.start_button.configure(state="disabled")
         self.start_button.update()
@@ -836,13 +870,17 @@ class MainUI(ctk.CTk):
             "moons": self.moon_var.get(),
             "asteroids": self.asteroid_var.get(),
             "seed": self.seed_var.get(),
-            "path": self.directory_var.get()
+            "path": self.directory_var.get(),
+            "systemType": self.system_type_var.get()
         }
         try:
             with open(CACHE_FILE, "w") as f:
                 json.dump(cache_data, f)
         except Exception as e:
             print("Failed to write cache:", e)
+        # Save systemType to user settings before closing log file
+        state.settings["systemType"] = self.system_type_var.get()
+        save_user_settings(state.settings)
         # Properly close log file and exit
         self.ActionLog.close()
         self.destroy()

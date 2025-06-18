@@ -1,25 +1,29 @@
-import random
+import random, os
+
+stockPlanets = ["Moho", "Eve", "Kerbin", "Duna", "Dres", "Jool", "Eeloo"]
 
 # Generate a bunch of wormholes for some reason
-def generateWormholes(seed, alphabet, base_dir, allPlanets, StarAmount):
+def generateWormholes(seed, alphabet, targetPath, allPlanets, StarAmount):
     WormholeRNG = random.Random()
     WormholeRNG.seed(seed)
     #print(str(len(allPlanets)) + "<------------------------------------------------------------------------ all planata legth")
     if len(allPlanets) > 0:
-        wormholesConfig = open(base_dir / "Configs" / f"wormholes{WormholeRNG.randint(0,100000)}.cfg", "x") # random number to avoid existing file errors.
+        wormholesConfig = open(targetPath + "/Configs/" + f"wormholes{WormholeRNG.randint(0,100000)}.cfg", "x") # random number to avoid existing file errors.
         wormholesConfig.write(
-            "@Kopernicus:LAST[InfiniteDiscoveries]:HAS[@InfiniteDiscoveriesSettings:HAS[#Wormholes[?rue]]]:NEEDS[KopernicusExpansion]\n"
+            "@Kopernicus:LAST[InfiniteDiscoveries]:NEEDS[KopernicusExpansion]\n"
             "{\n"
         )
         for i in range(0,StarAmount + 1):
-            target1 = allPlanets[WormholeRNG.randint(0,len(allPlanets)-1)]
+            target1 = stockPlanets[WormholeRNG.randint(0,len(stockPlanets)-1)]
             while True:
                 target2 = allPlanets[WormholeRNG.randint(0,len(allPlanets)-1)]
                 if not target2 == target1:
                     break
             wormholeName1 = alphabet[WormholeRNG.randint(0,len(alphabet)-1)] + alphabet[WormholeRNG.randint(0,len(alphabet)-1)] + alphabet[WormholeRNG.randint(0,len(alphabet)-1)] + "-" + str(WormholeRNG.randint(0,100000))
             wormholeName2 = alphabet[WormholeRNG.randint(0,len(alphabet)-1)] + alphabet[WormholeRNG.randint(0,len(alphabet)-1)] + alphabet[WormholeRNG.randint(0,len(alphabet)-1)] + "-" + str(WormholeRNG.randint(0,100000))
-            singularCfg = open(base_dir / "Visuals" / "Singularity" / f"{wormholeName1}-{wormholeName2}_SNG.cfg", "x")
+            singularityPath = os.path.join(targetPath, "Visuals", "Singularity")
+            os.makedirs(singularityPath, exist_ok=True)
+            singularCfg = open(os.path.join(singularityPath, f"{wormholeName1}-{wormholeName2}_SNG.cfg"), "x")
             singularCfg.write(
                 "Singularity\n"
                 "{\n"
@@ -79,8 +83,8 @@ def generateWormholes(seed, alphabet, base_dir, allPlanets, StarAmount):
                 "            fadeEnd = 10000\n"
                 "            Material\n"
                 "            {\n"
-                "                texture = InfiniteDiscoveries/Textures/Misc/literallynothing.png\n"
-                "                normals = InfiniteDiscoveries/Textures/Misc/literallyjustablanknormalmap.dds\n"
+                "                texture = InfiniteDiscoveries/Textures/Misc/None.dds\n"
+                "                normals = InfiniteDiscoveries/Textures/Misc/flatNormal.dds\n"
                 "                color = 1,1,1,1\n"
                 "                specColor = 0.05,0.05,0.05,1\n"
                 "                shininess = 1\n"
@@ -104,7 +108,7 @@ def generateWormholes(seed, alphabet, base_dir, allPlanets, StarAmount):
                 "            {			\n"
                 "                VertexHeightMap\n"
                 "                {\n"
-                "                    map = InfiniteDiscoveries/Textures/Misc/literallynothing.png\n"
+                "                    map = InfiniteDiscoveries/Textures/Misc/None.dds\n"
                 "                    offset = -99999\n"
                 "                    deformity = 0\n"
                 "                    scaleDeformityByRadius = False\n"
@@ -113,7 +117,7 @@ def generateWormholes(seed, alphabet, base_dir, allPlanets, StarAmount):
                 "                }\n"
                 "                VertexColorMap\n"
                 "                {\n"
-                "                    map = InfiniteDiscoveries/Textures/Misc/literallynothing.png\n"
+                "                    map = InfiniteDiscoveries/Textures/Misc/None.dds\n"
                 "                    order = 90\n"
                 "                    enabled = True\n"
                 "                    name = VertexColorMap\n"
@@ -159,8 +163,8 @@ def generateWormholes(seed, alphabet, base_dir, allPlanets, StarAmount):
                 "            fadeEnd = 10000\n"
                 "            Material\n"
                 "            {\n"
-                "                texture = InfiniteDiscoveries/Textures/Misc/literallynothing.png\n"
-                "                normals = InfiniteDiscoveries/Textures/Misc/literallyjustablanknormalmap.dds\n"
+                "                texture = InfiniteDiscoveries/Textures/Misc/None.dds\n"
+                "                normals = InfiniteDiscoveries/Textures/Misc/flatNormal.dds\n"
                 "                color = 1,1,1,1\n"
                 "                specColor = 0.05,0.05,0.05,1\n"
                 "                shininess = 1\n"
@@ -184,7 +188,7 @@ def generateWormholes(seed, alphabet, base_dir, allPlanets, StarAmount):
                 "            {			\n"
                 "                VertexHeightMap\n"
                 "                {\n"
-                "                    map = InfiniteDiscoveries/Textures/Misc/literallynothing.png\n"
+                "                    map = InfiniteDiscoveries/Textures/Misc/None.dds\n"
                 "                    offset = -99999\n"
                 "                    deformity = 0\n"
                 "                    scaleDeformityByRadius = False\n"
@@ -193,7 +197,7 @@ def generateWormholes(seed, alphabet, base_dir, allPlanets, StarAmount):
                 "                }\n"
                 "                VertexColorMap\n"
                 "                {\n"
-                "                    map = InfiniteDiscoveries/Textures/Misc/literallynothing.png\n"
+                "                    map = InfiniteDiscoveries/Textures/Misc/None.dds\n"
                 "                    order = 90\n"
                 "                    enabled = True\n"
                 "                    name = VertexColorMap\n"
