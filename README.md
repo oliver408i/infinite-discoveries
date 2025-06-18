@@ -6,6 +6,8 @@ This is a fork of the [original script](https://github.com/Sushutt/Infinite-Disc
 <img src="https://github.com/user-attachments/assets/e36f1e61-c25a-461a-adfb-31f2aa451931" width="400"/>
 <img src="https://github.com/user-attachments/assets/d8fe08a3-3cb1-4600-a1b9-eff52378356d" width="300"/>
 <img src="https://github.com/user-attachments/assets/f56d6b42-bf0e-4afc-8781-46870b1cdf46" width="250"/>
+<img src="https://github.com/user-attachments/assets/21240530-14f0-4178-9300-2264a41a64ad" width="250"/>
+
 
 
 ## Features
