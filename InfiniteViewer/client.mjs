@@ -400,10 +400,11 @@ async function initializeScene(data) {
                 }
 
                 if (innerRadius && outerRadius && ringTexture) {
-                    // Calculate ring distances from the surface of the planet sphere
+                    // Calculate ring distances using milliradii — thousandths of the parent body's radius.
+                    // For example, 1000 = 1 radius, 2000 = 2 radii, etc.
                     const planetRadius = body.radius * SCALE_FACTOR;
-                    const inner = planetRadius + (innerRadius * SCALE_FACTOR);
-                    const outer = planetRadius + (outerRadius * SCALE_FACTOR);
+                    const inner = planetRadius + (innerRadius * body.radius * SCALE_FACTOR * 0.001);
+                    const outer = planetRadius + (outerRadius * body.radius * SCALE_FACTOR * 0.001);
                     // const textureUrl = iconPaths[ringTexture]; // Not needed for debug version
 
                     const ringGeometry = new THREE.RingGeometry(inner, outer, 128);
@@ -424,8 +425,8 @@ async function initializeScene(data) {
                     ringMesh.rotateZ(nodeRad);
                     ringMesh.rotateX(inclinationRad);
                     ringMesh.position.copy(position);
-                    //scene.add(ringMesh); // TODO: Fix rings
-                    console.log(`Added ring for body: ${body.name} with radius: ${inner} to ${outer} (sphere radius ${planetRadius})`);
+                    scene.add(ringMesh); // TODO: Fix rings
+                    console.log(`Added ring for body: ${body.name} with radius (millirads): ${innerRadius} to ${outerRadius} (actual: ${inner} to ${outer}, sphere radius ${planetRadius})`);
                 }
             }
 
