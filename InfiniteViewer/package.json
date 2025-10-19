@@ -19,6 +19,6 @@
   },
   "homepage": "https://github.com/oliver408i/infinite-discoveries#readme",
   "dependencies": {
-    "electron": "^36.4.0"
+    "electron": "^36.8.1"
   }
 }
