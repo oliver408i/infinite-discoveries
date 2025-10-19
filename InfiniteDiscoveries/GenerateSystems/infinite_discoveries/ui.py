@@ -466,9 +466,12 @@ class MainUI(ctk.CTk):
         cached_version = cache.get("version")
         if cached_version != __version__:
             # Clear assets directory if version has changed or is missing
-            if ASSETS_DIR.exists():
-                shutil.rmtree(ASSETS_DIR)
-                ASSETS_DIR.mkdir(exist_ok=True)
+            if cached_version == "0.9.11+ce" and __version__ == "0.9.12+ce": # Hotfix, no changes to assets
+                pass
+            else:
+                if ASSETS_DIR.exists():
+                    shutil.rmtree(ASSETS_DIR)
+                    ASSETS_DIR.mkdir(exist_ok=True)
             cache["version"] = __version__
 
         # File log

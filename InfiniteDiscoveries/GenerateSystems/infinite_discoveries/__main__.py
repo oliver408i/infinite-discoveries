@@ -2125,11 +2125,14 @@ def waitForThreadsToFinish(mainThread, idk):
         thread.join()
     
 
-    if "wormhole" in state.settings['systemType'].lower():
-        allActions.append([time.localtime(),"Generating wormholes..."])
-        state.allActionArrayUpdated = True
+    try:
+        if "wormhole" in state.settings['systemType'].lower():
+            allActions.append([time.localtime(),"Generating wormholes..."])
+            state.allActionArrayUpdated = True
 
-        generateWormholes(globalSeed, alphabet, targetPath, allPlanets, StarAmount)
+            generateWormholes(globalSeed, alphabet, targetPath, allPlanets, StarAmount)
+    except KeyError:
+        print("systemType not found in state.settings, skipping wormhole generation.")
 
     global mainThreadFinished
     mainThreadFinished = True
