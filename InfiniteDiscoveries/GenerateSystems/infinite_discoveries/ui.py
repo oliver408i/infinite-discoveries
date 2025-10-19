@@ -315,6 +315,7 @@ def openSettings():
 
             new_settings = {
                 "useMultithreading": self.use_multithread_var.get(),
+                "systemType": self.system_type_var.get(),
                 "convertTexturesToDDS": self.convert_dds_var.get(),
                 "fantasyNames": self.fantasy_names_var.get(),
                 "minPlanets": minPlanets,
