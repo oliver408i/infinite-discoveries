@@ -1,0 +1,35 @@
+name: Nuitka Windows Build
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "InfiniteDiscoveries/GenerateSystems/**"
+      - ".github/workflows/nuitka-windows.yml"
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python deps
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install nuitka
+          python -m pip install -e InfiniteDiscoveries/GenerateSystems
+
+      - name: Build (Nuitka)
+        working-directory: InfiniteDiscoveries/GenerateSystems
+        run: powershell -ExecutionPolicy Bypass -File .\build_nuitka.ps1
+
+      - name: Upload build
+        uses: actions/upload-artifact@v4
+        with:
+          name: infinite-discoveries-windows
+          path: InfiniteDiscoveries/GenerateSystems/dist/nuitka

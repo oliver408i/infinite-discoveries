@@ -426,12 +426,13 @@ class DeleteWindow(ctk.CTk):
 class MainUI(ctk.CTk):
     def __init__(self, targetPath, startLoop, allActions, allThreads, mainThreadFinished, amountOfThingsDone, amountOfThingsToDo):
         super().__init__()
-        self.wm_attributes("-type", "splash") if os.name != 'nt' else self.overrideredirect(True)
+        if os.name == 'nt':
+            self.overrideredirect(True)
         self.option_add('*tearOff', False)
         self.config(menu=tk.Menu(self))  # Empty menu
         self.title("Infinite Discoveries " + __version__)
-        self.geometry("800x500")
-        self.minsize(900, 600)
+        self.geometry("1650x750")
+        self.minsize(1650, 900)
         self.configure(bg="#1f1f1f")
         self.amountValues = [1, 5, 4, 2]
         self.targetPath = targetPath
@@ -627,6 +628,22 @@ class MainUI(ctk.CTk):
         if folder:
             self.directory_var.set(folder)
             self.targetPath = folder
+            # Persist the selected directory immediately
+            cache_data = {
+                "stars": self.star_var.get(),
+                "planets": self.planet_var.get(),
+                "moons": self.moon_var.get(),
+                "asteroids": self.asteroid_var.get(),
+                "seed": self.seed_var.get(),
+                "path": self.directory_var.get(),
+                "systemType": self.system_type_var.get(),
+                "version": __version__
+            }
+            try:
+                with open(CACHE_FILE, "w") as f:
+                    json.dump(cache_data, f)
+            except Exception as e:
+                print("Failed to write cache:", e)
 
     def validate_star(self, event=None):
         val = self.star_var.get()
@@ -926,10 +943,12 @@ class MainUI(ctk.CTk):
 
         # Only trigger download if directory is empty
         if not any(p.is_dir() for p in ASSETS_DIR.iterdir()):
+            print("Asset download triggered: no subdirectories found in assets directory.")
             if hasattr(self, "start_button"):
                 self.start_button.configure(state="disabled")
             threading.Thread(target=download, daemon=True).start()
         else:
+            print("Asset download skipped: assets directory contains at least one subdirectory.")
             self.isDownloading = False
 
     def show_download_popup(self):

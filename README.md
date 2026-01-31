@@ -55,6 +55,12 @@ This is a fork of the [original script](https://github.com/Sushutt/Infinite-Disc
 - Run `pip install path/to/theFileYouJustDownloaded.whl` (you can drag the whl file into your terminal. You might use `pip3` or `py -m pip`)
 - Run the command `infinite-discoveries` or `python -m infinite_discoveries`
 - Wait a bit for the GUI to open
+- On first run, the asset pack will auto-download to `~/.infinite_discoveries/assets`
+
+### Packaging (Nuitka)
+- Linux build: `InfiniteDiscoveries/GenerateSystems/build_nuitka.sh`
+- Windows build: `InfiniteDiscoveries/GenerateSystems/build_nuitka.ps1`
+- Output goes to `InfiniteDiscoveries/GenerateSystems/dist/nuitka`
 ### After generation
 - Check the `Configs` folder for any bad planet files (usually those with zero bytes or empty)
 - If you find any, you can either delete them, or delete the whole `InfiniteDiscoveries` folder and regenerate

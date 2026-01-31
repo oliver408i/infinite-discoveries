@@ -1,5 +1,6 @@
 import numpy as np
-import random, time, math, noise, os, shutil
+import random, time, math, os, shutil
+import pyfastnoisesimd as fns
 from . import state, Settings
 from PIL import Image, ImageEnhance, ImageChops, ImageOps, ImageFilter
 from colour import Color
@@ -111,6 +112,8 @@ def generatePlanetMaps(vacuum, terrainR, terrainG, terrainB, planetName, ocean, 
     print("Generating noise...")
     texStartTime = time.time()
     seed = terrainGenRNG.randint(0,10000)
+    noise_gen = fns.Noise(seed=seed)
+    noise_gen.noiseType = fns.NoiseType.SimplexFractal
     size = 1024
     radius = 1.0
     octaves = Settings.noiseOctaves
@@ -128,29 +131,34 @@ def generatePlanetMaps(vacuum, terrainR, terrainG, terrainB, planetName, ocean, 
     allActions.append([time.localtime(),"Generating noise for : " + planetName])
     state.allActionArrayUpdated = True
 
-    for i in range(size):
-        if everythingEnded == True:
-            raise Exception("UI thread isn't running.")
-        print("Generating for " + str(time.time()-texStartTime) + " seconds...", end="\r")
-        for j in range(size):
-            # Convert the pixel coordinates to spherical coordinates
-            theta = 2 * math.pi * i / size
-            phi = math.pi * j / size
-            x = radius * math.sin(phi) * math.cos(theta)
-            y = radius * math.sin(phi) * math.sin(theta)
-            z = radius * math.cos(phi)
+    if everythingEnded == True:
+        raise Exception("UI thread isn't running.")
+    print("Generating for " + str(time.time()-texStartTime) + " seconds...", end="\r")
 
-            # Sample the noise function at the current point using multiple octaves
-            noise_value = 0.0
-            frequency = freq_random
-            amplitude = 1.0
-            for k in range(octaves):
-                noise_value += amplitude * noise.snoise4(x * frequency, y * frequency, z * frequency, seed)
-                frequency *= lacunarity
-                amplitude *= persistence
+    noise_gen.frequency = freq_random
+    noise_gen.fractal.octaves = octaves
+    noise_gen.fractal.lacunarity = lacunarity
+    noise_gen.fractal.gain = persistence
 
-            # Store the noise value in the heightmap
-            heightmap[i, j] = noise_value
+    i_vals = np.arange(size, dtype=np.float32)
+    j_vals = np.arange(size, dtype=np.float32)
+    theta = (2.0 * math.pi * i_vals) / size
+    phi = (math.pi * j_vals) / size
+    theta_grid, phi_grid = np.meshgrid(theta, phi, indexing="ij")
+
+    sin_phi = np.sin(phi_grid)
+    x = radius * sin_phi * np.cos(theta_grid)
+    y = radius * sin_phi * np.sin(theta_grid)
+    z = radius * np.cos(phi_grid)
+
+    num_coords = size * size
+    coords = fns.empty_coords(num_coords)
+    coords[0, :num_coords] = x.reshape(-1)
+    coords[1, :num_coords] = y.reshape(-1)
+    coords[2, :num_coords] = z.reshape(-1)
+
+    noise_values = noise_gen.genFromCoords(coords)
+    heightmap = noise_values[:num_coords].reshape((size, size))
 
     #if lava == True:
     #    lavaNoise = np.zeros((size, size))
@@ -169,7 +177,7 @@ def generatePlanetMaps(vacuum, terrainR, terrainG, terrainB, planetName, ocean, 
     #            frequency = 1
     #            amplitude = 1.0
     #            for k in range(octaves):
-    #                noise_value += amplitude * noise.snoise4(x * frequency, y * frequency, z * frequency, seed)
+    #                noise_value += amplitude * simplex.noise4(x * frequency, y * frequency, z * frequency, 0.0)
     #                frequency *= 10
     #                amplitude *= 0.5
 #

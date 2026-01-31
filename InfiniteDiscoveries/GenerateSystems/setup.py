@@ -14,7 +14,7 @@ setup(
         "Wand",
         "scipy",
         "colour",
-        "noise",
+        "pyfastnoisesimd",
         "pillow",
         "tk"
     ],

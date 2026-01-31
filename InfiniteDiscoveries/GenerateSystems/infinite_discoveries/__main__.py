@@ -4,6 +4,10 @@ from . import state
 from ._version import __version__
 
 from pathlib import Path
+try:
+    import tkinter as tk
+except Exception:
+    tk = None
 
 import multiprocessing
 import threading
@@ -15,6 +19,69 @@ everythingEnded = False
 
 amountOfThingsToDo = 0
 amountOfThingsDone = 0
+
+_splash_root = None
+_splash_host = None
+_splash_image = None
+
+def _show_splash():
+    global _splash_root, _splash_host, _splash_image
+    if tk is None:
+        return
+    try:
+        host = tk.Tk()
+        host.withdraw()
+        splash = tk.Toplevel(host)
+        splash.overrideredirect(True)
+        splash.attributes("-topmost", True)
+        banner_path = Path(__file__).resolve().parent.parent / "ID_CE-banner.png"
+        if banner_path.exists():
+            _splash_image = tk.PhotoImage(file=str(banner_path))
+            label = tk.Label(splash, image=_splash_image, borderwidth=0, highlightthickness=0)
+            label.pack()
+            splash.update_idletasks()
+            width = _splash_image.width()
+            height = _splash_image.height()
+        else:
+            label = tk.Label(splash, text="Infinite Discoveries", font=("TkDefaultFont", 16, "bold"))
+            label.pack(padx=20, pady=20)
+            splash.update_idletasks()
+            width = splash.winfo_width()
+            height = splash.winfo_height()
+        x = (splash.winfo_screenwidth() - width) // 2
+        y = (splash.winfo_screenheight() - height) // 2
+        splash.geometry(f"{width}x{height}+{x}+{y}")
+        splash.deiconify()
+        splash.update()
+        _splash_root = splash
+        _splash_host = host
+    except Exception:
+        _splash_root = None
+        _splash_host = None
+        _splash_image = None
+
+def _close_splash():
+    global _splash_root, _splash_host, _splash_image
+    if _splash_root is None:
+        return
+    try:
+        _splash_root.destroy()
+    except Exception:
+        pass
+    try:
+        if _splash_host is not None:
+            _splash_host.destroy()
+    except Exception:
+        pass
+    _splash_root = None
+    _splash_host = None
+    _splash_image = None
+    try:
+        tk._default_root = None
+    except Exception:
+        pass
+
+_show_splash()
 
 print(
     "■■■■■■■■■■■■■  ■■        ■■  ■■■■■■■■  ■■■■■■■■■■■■■  ■■        ■■  ■■■■■■■■■■■■■  ■■■■■■■■■■■■■  ■■■■■■■■■\n"
@@ -2165,6 +2232,7 @@ def startLoop(starAm,planetAm,moonAM,asteroidAM,targetPath,customSeed=None,overr
 
 
 def main():
+    _close_splash()
     from .ui import MainUI
     app = MainUI(
         targetPath=targetPath,

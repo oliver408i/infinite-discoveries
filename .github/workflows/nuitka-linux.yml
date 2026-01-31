@@ -1,0 +1,40 @@
+name: Nuitka Linux Build
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "InfiniteDiscoveries/GenerateSystems/**"
+      - ".github/workflows/nuitka-linux.yml"
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install system deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc g++ patchelf
+
+      - name: Install Python deps
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install nuitka
+          python -m pip install -e InfiniteDiscoveries/GenerateSystems
+
+      - name: Build (Nuitka)
+        working-directory: InfiniteDiscoveries/GenerateSystems
+        run: ./build_nuitka.sh
+
+      - name: Upload build
+        uses: actions/upload-artifact@v4
+        with:
+          name: infinite-discoveries-linux
+          path: InfiniteDiscoveries/GenerateSystems/dist/nuitka
